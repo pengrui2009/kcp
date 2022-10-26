@@ -1,0 +1,38 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+../ikcp.h
+stddef.h
+-
+stdlib.h
+-
+assert.h
+-
+sys/types.h
+-
+sys/inttypes.h
+-
+stdint.h
+-
+
+/home/tusimple/zoro/mw2/reliable-udp/kcp/examples/server.cpp
+ikcp.h
+/home/tusimple/zoro/mw2/reliable-udp/kcp/examples/ikcp.h
+cstdint
+-
+iostream
+-
+atomic
+-
+boost/asio.hpp
+-
+boost/bind/bind.hpp
+-
+memory
+-
+
