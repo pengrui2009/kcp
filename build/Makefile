@@ -187,6 +187,19 @@ depend:
 .PHONY : depend
 
 #=============================================================================
+# Target rules for targets named server_test
+
+# Build rule for target.
+server_test: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 server_test
+.PHONY : server_test
+
+# fast build rule for target.
+server_test/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/server_test.dir/build.make CMakeFiles/server_test.dir/build
+.PHONY : server_test/fast
+
+#=============================================================================
 # Target rules for targets named kcp_server_test
 
 # Build rule for target.
@@ -369,6 +382,19 @@ NightlyBuild/fast:
 .PHONY : NightlyBuild/fast
 
 #=============================================================================
+# Target rules for targets named reliable_asio_udp
+
+# Build rule for target.
+reliable_asio_udp: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 reliable_asio_udp
+.PHONY : reliable_asio_udp
+
+# fast build rule for target.
+reliable_asio_udp/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/reliable_asio_udp.dir/build.make CMakeFiles/reliable_asio_udp.dir/build
+.PHONY : reliable_asio_udp/fast
+
+#=============================================================================
 # Target rules for targets named NightlyStart
 
 # Build rule for target.
@@ -406,6 +432,19 @@ NightlyMemCheck: cmake_check_build_system
 NightlyMemCheck/fast:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/NightlyMemCheck.dir/build.make CMakeFiles/NightlyMemCheck.dir/build
 .PHONY : NightlyMemCheck/fast
+
+#=============================================================================
+# Target rules for targets named client_test
+
+# Build rule for target.
+client_test: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 client_test
+.PHONY : client_test
+
+# fast build rule for target.
+client_test/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/client_test.dir/build.make CMakeFiles/client_test.dir/build
+.PHONY : client_test/fast
 
 #=============================================================================
 # Target rules for targets named ExperimentalStart
@@ -683,6 +722,141 @@ ikcp.c.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/kcp.dir/build.make CMakeFiles/kcp.dir/ikcp.c.s
 .PHONY : ikcp.c.s
 
+src/client.o: src/client.cpp.o
+
+.PHONY : src/client.o
+
+# target to build an object file
+src/client.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/client_test.dir/build.make CMakeFiles/client_test.dir/src/client.cpp.o
+.PHONY : src/client.cpp.o
+
+src/client.i: src/client.cpp.i
+
+.PHONY : src/client.i
+
+# target to preprocess a source file
+src/client.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/client_test.dir/build.make CMakeFiles/client_test.dir/src/client.cpp.i
+.PHONY : src/client.cpp.i
+
+src/client.s: src/client.cpp.s
+
+.PHONY : src/client.s
+
+# target to generate assembly for a file
+src/client.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/client_test.dir/build.make CMakeFiles/client_test.dir/src/client.cpp.s
+.PHONY : src/client.cpp.s
+
+src/reliable_asio_udp.o: src/reliable_asio_udp.cpp.o
+
+.PHONY : src/reliable_asio_udp.o
+
+# target to build an object file
+src/reliable_asio_udp.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/reliable_asio_udp.dir/build.make CMakeFiles/reliable_asio_udp.dir/src/reliable_asio_udp.cpp.o
+.PHONY : src/reliable_asio_udp.cpp.o
+
+src/reliable_asio_udp.i: src/reliable_asio_udp.cpp.i
+
+.PHONY : src/reliable_asio_udp.i
+
+# target to preprocess a source file
+src/reliable_asio_udp.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/reliable_asio_udp.dir/build.make CMakeFiles/reliable_asio_udp.dir/src/reliable_asio_udp.cpp.i
+.PHONY : src/reliable_asio_udp.cpp.i
+
+src/reliable_asio_udp.s: src/reliable_asio_udp.cpp.s
+
+.PHONY : src/reliable_asio_udp.s
+
+# target to generate assembly for a file
+src/reliable_asio_udp.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/reliable_asio_udp.dir/build.make CMakeFiles/reliable_asio_udp.dir/src/reliable_asio_udp.cpp.s
+.PHONY : src/reliable_asio_udp.cpp.s
+
+src/server.o: src/server.cpp.o
+
+.PHONY : src/server.o
+
+# target to build an object file
+src/server.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/server_test.dir/build.make CMakeFiles/server_test.dir/src/server.cpp.o
+.PHONY : src/server.cpp.o
+
+src/server.i: src/server.cpp.i
+
+.PHONY : src/server.i
+
+# target to preprocess a source file
+src/server.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/server_test.dir/build.make CMakeFiles/server_test.dir/src/server.cpp.i
+.PHONY : src/server.cpp.i
+
+src/server.s: src/server.cpp.s
+
+.PHONY : src/server.s
+
+# target to generate assembly for a file
+src/server.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/server_test.dir/build.make CMakeFiles/server_test.dir/src/server.cpp.s
+.PHONY : src/server.cpp.s
+
+src/timer.o: src/timer.cpp.o
+
+.PHONY : src/timer.o
+
+# target to build an object file
+src/timer.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/reliable_asio_udp.dir/build.make CMakeFiles/reliable_asio_udp.dir/src/timer.cpp.o
+.PHONY : src/timer.cpp.o
+
+src/timer.i: src/timer.cpp.i
+
+.PHONY : src/timer.i
+
+# target to preprocess a source file
+src/timer.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/reliable_asio_udp.dir/build.make CMakeFiles/reliable_asio_udp.dir/src/timer.cpp.i
+.PHONY : src/timer.cpp.i
+
+src/timer.s: src/timer.cpp.s
+
+.PHONY : src/timer.s
+
+# target to generate assembly for a file
+src/timer.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/reliable_asio_udp.dir/build.make CMakeFiles/reliable_asio_udp.dir/src/timer.cpp.s
+.PHONY : src/timer.cpp.s
+
+src/timestamp.o: src/timestamp.cpp.o
+
+.PHONY : src/timestamp.o
+
+# target to build an object file
+src/timestamp.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/reliable_asio_udp.dir/build.make CMakeFiles/reliable_asio_udp.dir/src/timestamp.cpp.o
+.PHONY : src/timestamp.cpp.o
+
+src/timestamp.i: src/timestamp.cpp.i
+
+.PHONY : src/timestamp.i
+
+# target to preprocess a source file
+src/timestamp.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/reliable_asio_udp.dir/build.make CMakeFiles/reliable_asio_udp.dir/src/timestamp.cpp.i
+.PHONY : src/timestamp.cpp.i
+
+src/timestamp.s: src/timestamp.cpp.s
+
+.PHONY : src/timestamp.s
+
+# target to generate assembly for a file
+src/timestamp.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/reliable_asio_udp.dir/build.make CMakeFiles/reliable_asio_udp.dir/src/timestamp.cpp.s
+.PHONY : src/timestamp.cpp.s
+
 test.o: test.cpp.o
 
 .PHONY : test.o
@@ -751,10 +925,13 @@ help:
 	@echo "... NightlySubmit"
 	@echo "... NightlyTest"
 	@echo "... NightlyUpdate"
+	@echo "... client_test"
 	@echo "... kcp"
 	@echo "... kcp_client_test"
 	@echo "... kcp_server_test"
 	@echo "... kcp_test"
+	@echo "... reliable_asio_udp"
+	@echo "... server_test"
 	@echo "... examples/client.o"
 	@echo "... examples/client.i"
 	@echo "... examples/client.s"
@@ -764,6 +941,21 @@ help:
 	@echo "... ikcp.o"
 	@echo "... ikcp.i"
 	@echo "... ikcp.s"
+	@echo "... src/client.o"
+	@echo "... src/client.i"
+	@echo "... src/client.s"
+	@echo "... src/reliable_asio_udp.o"
+	@echo "... src/reliable_asio_udp.i"
+	@echo "... src/reliable_asio_udp.s"
+	@echo "... src/server.o"
+	@echo "... src/server.i"
+	@echo "... src/server.s"
+	@echo "... src/timer.o"
+	@echo "... src/timer.i"
+	@echo "... src/timer.s"
+	@echo "... src/timestamp.o"
+	@echo "... src/timestamp.i"
+	@echo "... src/timestamp.s"
 	@echo "... test.o"
 	@echo "... test.i"
 	@echo "... test.s"

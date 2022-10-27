@@ -4,7 +4,7 @@
 # compile CXX with /usr/bin/c++
 CXX_DEFINES = 
 
-CXX_INCLUDES = -I/home/tusimple/zoro/mw2/reliable-udp/kcp
+CXX_INCLUDES = -I/home/tusimple/zoro/mw2/reliable-udp/kcp -I/home/tusimple/zoro/mw2/reliable-udp/kcp/src
 
 CXX_FLAGS =  -std=c++14
 

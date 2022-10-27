@@ -4,7 +4,7 @@
 # compile C with /usr/bin/cc
 C_DEFINES = 
 
-C_INCLUDES = -I/home/tusimple/zoro/mw2/reliable-udp/kcp
+C_INCLUDES = -I/home/tusimple/zoro/mw2/reliable-udp/kcp -I/home/tusimple/zoro/mw2/reliable-udp/kcp/src
 
 C_FLAGS =  -std=c99
 

@@ -72,10 +72,13 @@ CMAKE_BINARY_DIR = /home/tusimple/zoro/mw2/reliable-udp/kcp/build
 # Directory level rules for the build root directory
 
 # The main recursive "all" target.
+all: CMakeFiles/server_test.dir/all
 all: CMakeFiles/kcp_server_test.dir/all
 all: CMakeFiles/kcp_client_test.dir/all
 all: CMakeFiles/kcp_test.dir/all
 all: CMakeFiles/kcp.dir/all
+all: CMakeFiles/reliable_asio_udp.dir/all
+all: CMakeFiles/client_test.dir/all
 
 .PHONY : all
 
@@ -85,6 +88,7 @@ preinstall:
 .PHONY : preinstall
 
 # The main recursive "clean" target.
+clean: CMakeFiles/server_test.dir/clean
 clean: CMakeFiles/kcp_server_test.dir/clean
 clean: CMakeFiles/kcp_client_test.dir/clean
 clean: CMakeFiles/kcp_test.dir/clean
@@ -99,9 +103,11 @@ clean: CMakeFiles/NightlyUpdate.dir/clean
 clean: CMakeFiles/kcp.dir/clean
 clean: CMakeFiles/Continuous.dir/clean
 clean: CMakeFiles/NightlyBuild.dir/clean
+clean: CMakeFiles/reliable_asio_udp.dir/clean
 clean: CMakeFiles/NightlyStart.dir/clean
 clean: CMakeFiles/NightlyMemoryCheck.dir/clean
 clean: CMakeFiles/NightlyMemCheck.dir/clean
+clean: CMakeFiles/client_test.dir/clean
 clean: CMakeFiles/ExperimentalStart.dir/clean
 clean: CMakeFiles/ContinuousConfigure.dir/clean
 clean: CMakeFiles/NightlyCoverage.dir/clean
@@ -121,13 +127,41 @@ clean: CMakeFiles/ContinuousUpdate.dir/clean
 .PHONY : clean
 
 #=============================================================================
+# Target rules for target CMakeFiles/server_test.dir
+
+# All Build rule for target.
+CMakeFiles/server_test.dir/all: CMakeFiles/kcp.dir/all
+CMakeFiles/server_test.dir/all: CMakeFiles/reliable_asio_udp.dir/all
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/server_test.dir/build.make CMakeFiles/server_test.dir/depend
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/server_test.dir/build.make CMakeFiles/server_test.dir/build
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/tusimple/zoro/mw2/reliable-udp/kcp/build/CMakeFiles --progress-num=15,16 "Built target server_test"
+.PHONY : CMakeFiles/server_test.dir/all
+
+# Build rule for subdir invocation for target.
+CMakeFiles/server_test.dir/rule: cmake_check_build_system
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/tusimple/zoro/mw2/reliable-udp/kcp/build/CMakeFiles 8
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 CMakeFiles/server_test.dir/all
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/tusimple/zoro/mw2/reliable-udp/kcp/build/CMakeFiles 0
+.PHONY : CMakeFiles/server_test.dir/rule
+
+# Convenience name for target.
+server_test: CMakeFiles/server_test.dir/rule
+
+.PHONY : server_test
+
+# clean rule for target.
+CMakeFiles/server_test.dir/clean:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/server_test.dir/build.make CMakeFiles/server_test.dir/clean
+.PHONY : CMakeFiles/server_test.dir/clean
+
+#=============================================================================
 # Target rules for target CMakeFiles/kcp_server_test.dir
 
 # All Build rule for target.
 CMakeFiles/kcp_server_test.dir/all: CMakeFiles/kcp.dir/all
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/kcp_server_test.dir/build.make CMakeFiles/kcp_server_test.dir/depend
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/kcp_server_test.dir/build.make CMakeFiles/kcp_server_test.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/tusimple/zoro/mw2/reliable-udp/kcp/build/CMakeFiles --progress-num=5,6 "Built target kcp_server_test"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/tusimple/zoro/mw2/reliable-udp/kcp/build/CMakeFiles --progress-num=7,8 "Built target kcp_server_test"
 .PHONY : CMakeFiles/kcp_server_test.dir/all
 
 # Build rule for subdir invocation for target.
@@ -154,7 +188,7 @@ CMakeFiles/kcp_server_test.dir/clean:
 CMakeFiles/kcp_client_test.dir/all: CMakeFiles/kcp.dir/all
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/kcp_client_test.dir/build.make CMakeFiles/kcp_client_test.dir/depend
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/kcp_client_test.dir/build.make CMakeFiles/kcp_client_test.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/tusimple/zoro/mw2/reliable-udp/kcp/build/CMakeFiles --progress-num=3,4 "Built target kcp_client_test"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/tusimple/zoro/mw2/reliable-udp/kcp/build/CMakeFiles --progress-num=5,6 "Built target kcp_client_test"
 .PHONY : CMakeFiles/kcp_client_test.dir/all
 
 # Build rule for subdir invocation for target.
@@ -181,7 +215,7 @@ CMakeFiles/kcp_client_test.dir/clean:
 CMakeFiles/kcp_test.dir/all:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/kcp_test.dir/build.make CMakeFiles/kcp_test.dir/depend
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/kcp_test.dir/build.make CMakeFiles/kcp_test.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/tusimple/zoro/mw2/reliable-udp/kcp/build/CMakeFiles --progress-num=7,8 "Built target kcp_test"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/tusimple/zoro/mw2/reliable-udp/kcp/build/CMakeFiles --progress-num=9,10 "Built target kcp_test"
 .PHONY : CMakeFiles/kcp_test.dir/all
 
 # Build rule for subdir invocation for target.
@@ -424,7 +458,7 @@ CMakeFiles/NightlyUpdate.dir/clean:
 CMakeFiles/kcp.dir/all:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/kcp.dir/build.make CMakeFiles/kcp.dir/depend
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/kcp.dir/build.make CMakeFiles/kcp.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/tusimple/zoro/mw2/reliable-udp/kcp/build/CMakeFiles --progress-num=1,2 "Built target kcp"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/tusimple/zoro/mw2/reliable-udp/kcp/build/CMakeFiles --progress-num=3,4 "Built target kcp"
 .PHONY : CMakeFiles/kcp.dir/all
 
 # Build rule for subdir invocation for target.
@@ -497,6 +531,33 @@ NightlyBuild: CMakeFiles/NightlyBuild.dir/rule
 CMakeFiles/NightlyBuild.dir/clean:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/NightlyBuild.dir/build.make CMakeFiles/NightlyBuild.dir/clean
 .PHONY : CMakeFiles/NightlyBuild.dir/clean
+
+#=============================================================================
+# Target rules for target CMakeFiles/reliable_asio_udp.dir
+
+# All Build rule for target.
+CMakeFiles/reliable_asio_udp.dir/all:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/reliable_asio_udp.dir/build.make CMakeFiles/reliable_asio_udp.dir/depend
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/reliable_asio_udp.dir/build.make CMakeFiles/reliable_asio_udp.dir/build
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/tusimple/zoro/mw2/reliable-udp/kcp/build/CMakeFiles --progress-num=11,12,13,14 "Built target reliable_asio_udp"
+.PHONY : CMakeFiles/reliable_asio_udp.dir/all
+
+# Build rule for subdir invocation for target.
+CMakeFiles/reliable_asio_udp.dir/rule: cmake_check_build_system
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/tusimple/zoro/mw2/reliable-udp/kcp/build/CMakeFiles 4
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 CMakeFiles/reliable_asio_udp.dir/all
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/tusimple/zoro/mw2/reliable-udp/kcp/build/CMakeFiles 0
+.PHONY : CMakeFiles/reliable_asio_udp.dir/rule
+
+# Convenience name for target.
+reliable_asio_udp: CMakeFiles/reliable_asio_udp.dir/rule
+
+.PHONY : reliable_asio_udp
+
+# clean rule for target.
+CMakeFiles/reliable_asio_udp.dir/clean:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/reliable_asio_udp.dir/build.make CMakeFiles/reliable_asio_udp.dir/clean
+.PHONY : CMakeFiles/reliable_asio_udp.dir/clean
 
 #=============================================================================
 # Target rules for target CMakeFiles/NightlyStart.dir
@@ -578,6 +639,34 @@ NightlyMemCheck: CMakeFiles/NightlyMemCheck.dir/rule
 CMakeFiles/NightlyMemCheck.dir/clean:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/NightlyMemCheck.dir/build.make CMakeFiles/NightlyMemCheck.dir/clean
 .PHONY : CMakeFiles/NightlyMemCheck.dir/clean
+
+#=============================================================================
+# Target rules for target CMakeFiles/client_test.dir
+
+# All Build rule for target.
+CMakeFiles/client_test.dir/all: CMakeFiles/kcp.dir/all
+CMakeFiles/client_test.dir/all: CMakeFiles/reliable_asio_udp.dir/all
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/client_test.dir/build.make CMakeFiles/client_test.dir/depend
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/client_test.dir/build.make CMakeFiles/client_test.dir/build
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/tusimple/zoro/mw2/reliable-udp/kcp/build/CMakeFiles --progress-num=1,2 "Built target client_test"
+.PHONY : CMakeFiles/client_test.dir/all
+
+# Build rule for subdir invocation for target.
+CMakeFiles/client_test.dir/rule: cmake_check_build_system
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/tusimple/zoro/mw2/reliable-udp/kcp/build/CMakeFiles 8
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 CMakeFiles/client_test.dir/all
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/tusimple/zoro/mw2/reliable-udp/kcp/build/CMakeFiles 0
+.PHONY : CMakeFiles/client_test.dir/rule
+
+# Convenience name for target.
+client_test: CMakeFiles/client_test.dir/rule
+
+.PHONY : client_test
+
+# clean rule for target.
+CMakeFiles/client_test.dir/clean:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/client_test.dir/build.make CMakeFiles/client_test.dir/clean
+.PHONY : CMakeFiles/client_test.dir/clean
 
 #=============================================================================
 # Target rules for target CMakeFiles/ExperimentalStart.dir

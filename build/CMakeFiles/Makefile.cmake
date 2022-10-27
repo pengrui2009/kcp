@@ -51,6 +51,7 @@ set(CMAKE_MAKEFILE_PRODUCTS
 
 # Dependency information for all targets:
 set(CMAKE_DEPEND_INFO_FILES
+  "CMakeFiles/server_test.dir/DependInfo.cmake"
   "CMakeFiles/kcp_server_test.dir/DependInfo.cmake"
   "CMakeFiles/kcp_client_test.dir/DependInfo.cmake"
   "CMakeFiles/kcp_test.dir/DependInfo.cmake"
@@ -65,9 +66,11 @@ set(CMAKE_DEPEND_INFO_FILES
   "CMakeFiles/kcp.dir/DependInfo.cmake"
   "CMakeFiles/Continuous.dir/DependInfo.cmake"
   "CMakeFiles/NightlyBuild.dir/DependInfo.cmake"
+  "CMakeFiles/reliable_asio_udp.dir/DependInfo.cmake"
   "CMakeFiles/NightlyStart.dir/DependInfo.cmake"
   "CMakeFiles/NightlyMemoryCheck.dir/DependInfo.cmake"
   "CMakeFiles/NightlyMemCheck.dir/DependInfo.cmake"
+  "CMakeFiles/client_test.dir/DependInfo.cmake"
   "CMakeFiles/ExperimentalStart.dir/DependInfo.cmake"
   "CMakeFiles/ContinuousConfigure.dir/DependInfo.cmake"
   "CMakeFiles/NightlyCoverage.dir/DependInfo.cmake"

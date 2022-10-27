@@ -1,0 +1,2 @@
+/usr/bin/ar qc libreliable_asio_udp.a CMakeFiles/reliable_asio_udp.dir/src/timer.cpp.o CMakeFiles/reliable_asio_udp.dir/src/timestamp.cpp.o CMakeFiles/reliable_asio_udp.dir/src/reliable_asio_udp.cpp.o
+/usr/bin/ranlib libreliable_asio_udp.a
