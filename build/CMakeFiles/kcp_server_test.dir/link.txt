@@ -1,1 +1,0 @@
-/usr/bin/c++  -std=c++14 -rdynamic CMakeFiles/kcp_server_test.dir/examples/server.cpp.o -o kcp_server_test  libkcp.a -lpthread -lboost_system 

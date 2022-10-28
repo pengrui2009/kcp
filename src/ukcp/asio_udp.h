@@ -3,6 +3,7 @@
 
 #include <cstdint>
 #include <iostream>
+#include <thread>
 #include <atomic>
 #include <boost/asio.hpp>
 #include <boost/bind/bind.hpp>
@@ -17,8 +18,8 @@ enum TxMode {
 
 class ASIOUdp {
 public:
-    ASIOUdp(TxMode mode = ASIO_MODE, uint16_t port = 36001);
-    ASIOUdp(TxMode mode = ASIO_MODE, std::string &ip, uint16_t port = 36001);
+    ASIOUdp(TxMode mode = NORMAL_MODE, uint16_t port = 36001);
+    ASIOUdp(TxMode mode, std::string &ip, uint16_t port);
     ~ASIOUdp();
     int initialize();
     int start();
@@ -26,11 +27,11 @@ public:
 
     int send(uint8_t *data_ptr, size_t data_len, const std::string &ip, const uint16_t port);
 
-    void get_ipaddress();
-    void set_ipaddress();
+    void get_ipaddress(const boost::asio::ip::udp::endpoint &endpoint, std::string &ip, uint16_t &port);
+    void set_ipaddress(boost::asio::ip::udp::endpoint &endpoint, const std::string &ip, const uint16_t &port);
 
-    void set_host();
-    void get_host();
+    // void set_host();
+    // void get_host();
 
 protected:
     std::string local_ip_;
@@ -45,9 +46,11 @@ protected:
 
     std::shared_ptr<boost::asio::ip::udp::socket> socket_ptr_;
     std::shared_ptr<boost::asio::io_service> service_ptr_;
-    boost::asio::ip::udp::endpoint endpoint_ptr_;
+    boost::asio::ip::udp::endpoint endpoint_;
 
     std::array<uint8_t, KEthPacketMaxLength> databuffer_{};
+
+    //std::shared_ptr<std::thread> run_task_;
 
     virtual void OnSendDataCallback(const boost::system::error_code &ec, std::size_t bytes_transferred);
     virtual void OnReceiveDataCallback(const boost::system::error_code &ec, std::size_t bytes_transferred);

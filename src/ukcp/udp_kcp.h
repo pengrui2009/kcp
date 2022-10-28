@@ -2,24 +2,30 @@
 #define UDP_KCP_H
 
 #include "ikcp.h"
+
+#include "timer.h"
+
 #include "asio_udp.h"
 #include <atomic>
 #include <cstdint>
 
 class UKcp : public ASIOUdp {
 public:
-    UKcp(std::string &ip, uint16_t port);
+    UKcp(std::string ip, uint16_t port);
     ~UKcp();
-    int connect(std::string &server_ip, uint16_t port);
+    int connect(std::string server_ip, uint16_t port);
+    int initialize();
     int start();
     int spin();
-
-    int send_msg(uint8_t *data_ptr, size_t data_len);
+    int service();
+    int send_msg(uint8_t *data_ptr, size_t data_len, std::string &ip, uint16_t port);
     
-    int recv_msg(uint8_t *data_ptr, size_t data_len);
+    int recv_msg(uint8_t *data_ptr, size_t data_len, std::string &ip, uint16_t port);
 protected:
     int send_udp_package(const char *data_ptr, int data_len);
     
+    int HandleReceiveData(boost::asio::ip::udp::endpoint endpoint, std::size_t bytes_transferred);
+
     void OnTimerCallback();
 
     void OnSendDataCallback(const boost::system::error_code &ec, std::size_t bytes_transferred) override;

@@ -38,13 +38,24 @@ endif ()
 include_directories(
     ${CMAKE_SOURCE_DIR}
     src
+    src/cmn
+    src/protocol
+    src/ukcp
 )
 
 # build reliable asio udp library
-add_library(reliable_asio_udp STATIC
-    src/timer.cpp
-    src/timestamp.cpp
-    src/reliable_asio_udp.cpp
+# add_library(reliable_asio_udp STATIC
+#     src/timer.cpp
+#     src/timestamp.cpp
+#     src/reliable_asio_udp.cpp
+# )
+add_library(ukcp STATIC
+    src/cmn/logger.cpp    
+    src/cmn/timer.cpp
+    src/cmn/timestamp.cpp
+    src/protocol/base_frame.cpp
+    src/ukcp/asio_udp.cpp
+    src/ukcp/udp_kcp.cpp
 )
 
 # build test client
@@ -74,12 +85,37 @@ target_link_libraries(kcp_server_test
 )
 
 # build reliable asio udp
+# add_executable(server_test
+#     src/server.cpp
+# )
+
+# target_link_libraries(server_test
+#     reliable_asio_udp
+#     kcp
+#     pthread    
+#     boost_system
+#     # ${CMAKE_SOURCE_DIR}/third_party/enet/lib/libenet.a
+# )
+
+# add_executable(client_test
+#     src/client.cpp
+# )
+
+# target_link_libraries(client_test
+#     reliable_asio_udp
+#     kcp
+#     pthread    
+#     boost_system
+#     # ${CMAKE_SOURCE_DIR}/third_party/enet/lib/libenet.a
+# )
+
+# build reliable asio udp
 add_executable(server_test
-    src/server.cpp
+    src/examples/server_test.cpp
 )
 
 target_link_libraries(server_test
-    reliable_asio_udp
+    ukcp
     kcp
     pthread    
     boost_system
@@ -87,11 +123,11 @@ target_link_libraries(server_test
 )
 
 add_executable(client_test
-    src/client.cpp
+    src/examples/client_test.cpp
 )
 
 target_link_libraries(client_test
-    reliable_asio_udp
+    ukcp
     kcp
     pthread    
     boost_system

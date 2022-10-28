@@ -1,1 +1,0 @@
-/usr/bin/c++  -std=c++14 -rdynamic CMakeFiles/server_test.dir/src/server.cpp.o -o server_test  libreliable_asio_udp.a libkcp.a -lpthread -lboost_system 

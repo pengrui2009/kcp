@@ -5,7 +5,7 @@
 
 // std::array<uint8_t, 24> BaseFrame::signkey_ = {0x11, 0x12, 0x13, 0x14};
 
-uint64_t BaseFrame::ReadUint64BE(uint8_t* data)
+uint64_t BaseFrame::ReadUint64BE(const uint8_t* data)
 {
     uint8_t* p = (uint8_t*)data;
     uint64_t value = static_cast<uint64_t>(static_cast<uint64_t>(p[0]) << 56) | \
@@ -19,7 +19,7 @@ uint64_t BaseFrame::ReadUint64BE(uint8_t* data)
     return value;
 }
 
-uint64_t BaseFrame::ReadUint64LE(uint8_t* data)
+uint64_t BaseFrame::ReadUint64LE(const uint8_t* data)
 {
     uint8_t* p = (uint8_t*)data;
     uint64_t value = static_cast<uint64_t>(static_cast<uint64_t>(p[7]) << 56) | \
@@ -33,7 +33,7 @@ uint64_t BaseFrame::ReadUint64LE(uint8_t* data)
     return value;
 }
 
-uint32_t BaseFrame::ReadUint32BE(uint8_t* data)
+uint32_t BaseFrame::ReadUint32BE(const uint8_t* data)
 {
     uint8_t* p = (uint8_t*)data;
     uint32_t value = static_cast<uint32_t>(static_cast<uint32_t>(p[0]) << 24) | \
@@ -43,7 +43,7 @@ uint32_t BaseFrame::ReadUint32BE(uint8_t* data)
     return value;
 }
 
-uint32_t BaseFrame::ReadUint32LE(uint8_t* data)
+uint32_t BaseFrame::ReadUint32LE(const uint8_t* data)
 {
     uint8_t* p = (uint8_t*)data;
     uint32_t value = static_cast<uint32_t>(static_cast<uint32_t>(p[3]) << 24) | \
@@ -53,7 +53,7 @@ uint32_t BaseFrame::ReadUint32LE(uint8_t* data)
     return value;
 }
 
-uint32_t BaseFrame::ReadUint24BE(uint8_t* data)
+uint32_t BaseFrame::ReadUint24BE(const uint8_t* data)
 {
     uint8_t* p = (uint8_t*)data;
     uint32_t value = static_cast<uint32_t>(static_cast<uint32_t>(p[0]) << 16) | \
@@ -62,7 +62,7 @@ uint32_t BaseFrame::ReadUint24BE(uint8_t* data)
     return value;
 }
 
-uint32_t BaseFrame::ReadUint24LE(uint8_t* data)
+uint32_t BaseFrame::ReadUint24LE(const uint8_t* data)
 {
     uint8_t* p = (uint8_t*)data;
     uint32_t value = static_cast<uint32_t>(static_cast<uint32_t>(p[2]) << 16) | \
@@ -71,7 +71,7 @@ uint32_t BaseFrame::ReadUint24LE(uint8_t* data)
     return value;
 }
 
-uint16_t BaseFrame::ReadUint16BE(uint8_t* data)
+uint16_t BaseFrame::ReadUint16BE(const uint8_t* data)
 {
     uint8_t* p = (uint8_t*)data;
     uint16_t value = static_cast<uint16_t>(static_cast<uint16_t>(p[0]) << 8) | \
@@ -79,7 +79,7 @@ uint16_t BaseFrame::ReadUint16BE(uint8_t* data)
     return value; 
 }
 
-uint16_t BaseFrame::ReadUint16LE(uint8_t* data)
+uint16_t BaseFrame::ReadUint16LE(const uint8_t* data)
 {
     uint8_t* p = (uint8_t*)data;
     uint16_t value = static_cast<uint16_t>(static_cast<uint16_t>(p[1]) << 8) | \
@@ -179,6 +179,48 @@ BaseFrame::~BaseFrame()
     buffer_.clear();
 }
 
+int BaseFrame::encode()
+{
+    int ret = 0;
+
+    buffer_.clear();
+
+    // ip
+    uint8_t buffer_ip[FRAME_HOSTIP_SIZE] = {0};    
+    WriteUint32BE(buffer_ip, this->address_.host);
+    for (int i=0; i<sizeof(buffer_ip); i++)
+    {
+        buffer_.push_back(buffer_ip[i]);
+    }
+
+    // port
+    uint8_t buffer_port[FRAME_HOSTPORT_SIZE] = {0};
+    WriteUint16BE(buffer_port, this->address_.port);
+    for (int i=0; i<sizeof(buffer_port); i++)
+    {
+        buffer_.push_back(buffer_port[i]);
+    }
+
+    // count 
+    buffer_.push_back(count_);
+
+    // type
+    buffer_.push_back(static_cast<uint8_t>(type_));
+
+    // signkey
+    for (int i=0; i<signkey_.size(); i++)
+    {
+        buffer_.push_back(signkey_[i]);
+    }
+
+    for (size_t i=0; i<data_.size(); i++)
+    {
+        buffer_.push_back(data_[i]);
+    }
+
+    return 0;
+}
+
 int BaseFrame::encode(uint8_t *data_ptr, size_t data_len)
 {
     int ret = 0;
@@ -187,7 +229,7 @@ int BaseFrame::encode(uint8_t *data_ptr, size_t data_len)
 
     // ip
     uint8_t buffer_ip[FRAME_HOSTIP_SIZE] = {0};
-    WriteUint32BE(reinterpret_cast<char *>(buffer_ip), this->address_.ip);
+    WriteUint32BE(buffer_ip, this->address_.host);
     for (int i=0; i<sizeof(buffer_ip); i++)
     {
         buffer_.push_back(buffer_ip[i]);
@@ -195,7 +237,7 @@ int BaseFrame::encode(uint8_t *data_ptr, size_t data_len)
 
     // port
     uint8_t buffer_port[FRAME_HOSTPORT_SIZE] = {0};
-    WriteUint16BE(reinterpret_cast<char *>(buffer_port), this->address_.port);
+    WriteUint16BE(buffer_port, this->address_.port);
     for (int i=0; i<sizeof(buffer_port); i++)
     {
         buffer_.push_back(buffer_port[i]);
@@ -221,23 +263,27 @@ int BaseFrame::encode(uint8_t *data_ptr, size_t data_len)
     return 0;
 }
 
-int BaseFrame::decode(uint8_t *data_ptr, size_t data_len)
+int BaseFrame::decode(const uint8_t *data_ptr, size_t data_len)
 {
     int ret = 0;
     size_t offset = 0x00;
 
-    if (FRAME_HOSTIP_SIZE > data_len)
+    if (FRAME_HEADER_SIZE > data_len)
     {
-        LOG_ERROR("data frame decode failed, data_len:%d < %d", data_len, FRAME_HOSTIP_SIZE_);
+        LOG_ERROR("data frame decode failed, data_len:%d < %d", data_len, FRAME_HEADER_SIZE);
         return -1;
     }
 
-    address_.ip = ReadUint32BE(&data_ptr[FRAME_HOSTIP_OFFSET]);
+    address_.host = ReadUint32BE(&data_ptr[FRAME_HOSTIP_OFFSET]);
     address_.port = ReadUint16BE(&data_ptr[FRAME_HOSTPORT_OFFSET]);
     count_ = data_ptr[FRAME_COUNT_OFFSET];
-    type_ = data_ptr[FRAME_TYPE_OFFSET];
-    memcpy(signkey_,data(), &data[FRAME_MSGDATA_OFFSET], signkey_.size());
+    type_ = static_cast<FrameType>(data_ptr[FRAME_TYPE_OFFSET]);
+    memcpy(signkey_.data(), &data_ptr[FRAME_MSGDATA_OFFSET], signkey_.size());
 
+    for (size_t i=FRAME_HEADER_SIZE; i < data_len; i++)
+    {
+        data_.push_back(data_ptr[i]);
+    }
     return 0;
 }
 

@@ -1,1 +1,0 @@
-/usr/bin/c++  -std=c++14 -rdynamic CMakeFiles/client_test.dir/src/client.cpp.o -o client_test  libreliable_asio_udp.a libkcp.a -lpthread -lboost_system 
