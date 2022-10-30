@@ -71,12 +71,12 @@ add_library(ukcp_client STATIC
 )
 
 # build test client
-add_executable(kcp_client_test
+add_executable(udp_client_test
     # src/client/frame_handler.cpp
-    examples/client.cpp
+    examples/udp_client.cpp
 )
 
-target_link_libraries(kcp_client_test
+target_link_libraries(udp_client_test
     kcp
     pthread
     boost_system
@@ -84,12 +84,12 @@ target_link_libraries(kcp_client_test
 )
 
 # build test server
-add_executable(kcp_server_test
+add_executable(udp_server_test
     # src/client/frame_handler.cpp
-    examples/server.cpp
+    examples/udp_server.cpp
 )
 
-target_link_libraries(kcp_server_test
+target_link_libraries(udp_server_test
     kcp
     pthread    
     boost_system
@@ -165,6 +165,18 @@ add_executable(client
 target_link_libraries(client
     ukcp_client
     kcp
+    pthread    
+    boost_system
+    # ${CMAKE_SOURCE_DIR}/third_party/enet/lib/libenet.a
+)
+
+# test kcp client and server
+add_executable(kcp_client_test
+    ikcp.c
+    examples/kcp_client.cpp
+)
+
+target_link_libraries(kcp_client_test
     pthread    
     boost_system
     # ${CMAKE_SOURCE_DIR}/third_party/enet/lib/libenet.a
