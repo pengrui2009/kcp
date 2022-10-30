@@ -57,6 +57,7 @@ add_library(ukcp_server STATIC
     src/protocol/base_frame.cpp
     src/ukcp/server/asio_udp.cpp
     src/ukcp/server/udp_kcp.cpp
+    src/ukcp/server/server.cpp
 )
 
 add_library(ukcp_client STATIC
@@ -66,6 +67,7 @@ add_library(ukcp_client STATIC
     src/protocol/base_frame.cpp
     src/ukcp/client/asio_udp.cpp
     src/ukcp/client/udp_kcp.cpp
+    src/ukcp/client/client.cpp
 )
 
 # build test client

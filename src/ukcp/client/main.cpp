@@ -1,4 +1,5 @@
-#include "udp_kcp.h"
+#include "client.h"
+
 #include "logger.h"
 
 int main()
@@ -13,8 +14,8 @@ int main()
 
     LOG_INIT(log_filepath);
 
-    std::unique_ptr<KcpClient> client_ptr = 
-        std::make_unique<KcpClient>(client_ip, client_port);
+    std::unique_ptr<Client> client_ptr = 
+        std::make_unique<Client>(client_ip, client_port);
 
     LOG_INFO("client initialize");
     client_ptr->initialize();
@@ -32,7 +33,7 @@ int main()
     {
         sleep(2);
         uint8_t buffer[] = {0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09};
-        ret = client_ptr->send_kcp_packet(buffer, sizeof(buffer));
+        ret = client_ptr->send(buffer, sizeof(buffer));
         LOG_INFO("send_kcp_packet ret:%d", ret);
         
     }

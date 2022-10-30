@@ -8,11 +8,11 @@
 #include <boost/asio.hpp>
 #include <boost/bind/bind.hpp>
 #include <memory>
-
+#include "typedef.h"
 // TODO
-constexpr size_t KEthPacketMaxLength = 4096;
+constexpr size_t KEthPacketMaxLength = 32 * 4096;
 
-typedef boost::asio::ip::udp::endpoint asio_endpoint_t;
+// typedef boost::asio::ip::udp::endpoint asio_endpoint_t;
 
 enum TxMode {
     NORMAL_MODE = 0,
