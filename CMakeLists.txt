@@ -1,9 +1,9 @@
 CMAKE_MINIMUM_REQUIRED(VERSION 2.6)
 
-project(kcp LANGUAGES CXX C)
+project(kcp LANGUAGES C)
 
-set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14")
-set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c99")
+set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -std=c++14")
+set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g -std=c99")
 
 
 include(CTest)
@@ -34,6 +34,7 @@ if (BUILD_TESTING)
     endif()
 endif ()
 
+enable_language(CXX)
 
 include_directories(
     ${CMAKE_SOURCE_DIR}
@@ -49,13 +50,22 @@ include_directories(
 #     src/timestamp.cpp
 #     src/reliable_asio_udp.cpp
 # )
-add_library(ukcp STATIC
+add_library(ukcp_server STATIC
     src/cmn/logger.cpp    
     src/cmn/timer.cpp
     src/cmn/timestamp.cpp
     src/protocol/base_frame.cpp
-    src/ukcp/asio_udp.cpp
-    src/ukcp/udp_kcp.cpp
+    src/ukcp/server/asio_udp.cpp
+    src/ukcp/server/udp_kcp.cpp
+)
+
+add_library(ukcp_client STATIC
+    src/cmn/logger.cpp    
+    src/cmn/timer.cpp
+    src/cmn/timestamp.cpp
+    src/protocol/base_frame.cpp
+    src/ukcp/client/asio_udp.cpp
+    src/ukcp/client/udp_kcp.cpp
 )
 
 # build test client
@@ -110,24 +120,48 @@ target_link_libraries(kcp_server_test
 # )
 
 # build reliable asio udp
-add_executable(server_test
-    src/examples/server_test.cpp
+# add_executable(server_test
+#     src/examples/server_test.cpp
+# )
+
+# target_link_libraries(server_test
+#     ukcp
+#     kcp
+#     pthread    
+#     boost_system
+#     # ${CMAKE_SOURCE_DIR}/third_party/enet/lib/libenet.a
+# )
+
+# add_executable(client_test
+#     src/examples/client_test.cpp
+# )
+
+# target_link_libraries(client_test
+#     ukcp
+#     kcp
+#     pthread    
+#     boost_system
+#     # ${CMAKE_SOURCE_DIR}/third_party/enet/lib/libenet.a
+# )
+
+add_executable(server
+    src/ukcp/server/main.cpp
 )
 
-target_link_libraries(server_test
-    ukcp
+target_link_libraries(server
+    ukcp_server
     kcp
     pthread    
     boost_system
     # ${CMAKE_SOURCE_DIR}/third_party/enet/lib/libenet.a
 )
 
-add_executable(client_test
-    src/examples/client_test.cpp
+add_executable(client
+    src/ukcp/client/main.cpp
 )
 
-target_link_libraries(client_test
-    ukcp
+target_link_libraries(client
+    ukcp_client
     kcp
     pthread    
     boost_system

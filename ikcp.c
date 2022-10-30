@@ -1146,14 +1146,13 @@ void ikcp_flush(ikcpcb *kcp)
 void ikcp_update(ikcpcb *kcp, IUINT32 current)
 {
 	IINT32 slap;
-
+	
 	kcp->current = current;
 
 	if (kcp->updated == 0) {
 		kcp->updated = 1;
 		kcp->ts_flush = kcp->current;
 	}
-
 	slap = _itimediff(kcp->current, kcp->ts_flush);
 
 	if (slap >= 10000 || slap < -10000) {

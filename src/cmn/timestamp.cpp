@@ -55,6 +55,11 @@ uint64_t Timestamp::MillSecond()
     return value;
 }
 
+uint32_t Timestamp::iClock()
+{
+    return (MillSecond() & 0xFFFFFFFF);
+}
+
 uint64_t Timestamp::MicroSecond()
 {
     uint64_t value = 0;

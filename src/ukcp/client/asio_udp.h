@@ -9,7 +9,10 @@
 #include <boost/bind/bind.hpp>
 #include <memory>
 
+// TODO
 constexpr size_t KEthPacketMaxLength = 4096;
+
+typedef boost::asio::ip::udp::endpoint asio_endpoint_t;
 
 enum TxMode {
     NORMAL_MODE = 0,
@@ -25,10 +28,9 @@ public:
     int start();
     int run();
 
-    int send(uint8_t *data_ptr, size_t data_len, const std::string &ip, const uint16_t port);
-
-    void get_ipaddress(const boost::asio::ip::udp::endpoint &endpoint, std::string &ip, uint16_t &port);
-    void set_ipaddress(boost::asio::ip::udp::endpoint &endpoint, const std::string &ip, const uint16_t &port);
+    
+    void get_ipaddress(const asio_endpoint_t &endpoint, std::string &ip, uint16_t &port);
+    void set_ipaddress(asio_endpoint_t &endpoint, const std::string &ip, const uint16_t &port);
 
     // void set_host();
     // void get_host();
@@ -46,11 +48,14 @@ protected:
 
     std::shared_ptr<boost::asio::ip::udp::socket> socket_ptr_;
     std::shared_ptr<boost::asio::io_service> service_ptr_;
-    boost::asio::ip::udp::endpoint endpoint_;
+    asio_endpoint_t endpoint_;
 
     std::array<uint8_t, KEthPacketMaxLength> databuffer_{};
 
     //std::shared_ptr<std::thread> run_task_;
+    void do_async_receive_once();
+    int send(const uint8_t *data_ptr, size_t data_len, const std::string &ip, const uint16_t port);
+    int send(const uint8_t *data_ptr, size_t data_len, const asio_endpoint_t &dest);
 
     virtual void OnSendDataCallback(const boost::system::error_code &ec, std::size_t bytes_transferred);
     virtual void OnReceiveDataCallback(const boost::system::error_code &ec, std::size_t bytes_transferred);

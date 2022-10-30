@@ -17,7 +17,8 @@
 /* Save all the compiler settings. */
 // #pragma pack(push)
 // #pragma pack(1)
-class UKcp;
+class KcpServer;
+class KcpClient;
 
 enum FrameType : std::uint8_t 
 {
@@ -38,30 +39,38 @@ struct UkcpNetAddress {
     uint16_t port;
 };
 
-
-constexpr size_t FRAME_HOSTIP_OFFSET = 0;
-constexpr size_t FRAME_HOSTPORT_OFFSET = 4;
-constexpr size_t FRAME_COUNT_OFFSET = 6;
-constexpr size_t FRAME_TYPE_OFFSET = 7;
-constexpr size_t FRAME_SIGNKEY_OFFSET = 8;
-constexpr size_t FRAME_MSGDATA_OFFSET = 40;
-
 // kcp frame header size
 constexpr size_t KCP_FRAME_SIZE = 24;
+constexpr size_t KCP_SYNC_SIZE = 4;
+constexpr size_t KCP_CONV_SIZE = 4;
 
+constexpr uint8_t SYNC_BYTE_0 = 0x55;
+constexpr uint8_t SYNC_BYTE_1 = 0x55;
+constexpr uint8_t SYNC_BYTE_2 = 0x55;
+constexpr uint8_t SYNC_BYTE_3 = 0x55;
+
+constexpr size_t FRAME_HOSTIP_OFFSET = 4;
+constexpr size_t FRAME_HOSTPORT_OFFSET = 8;
+constexpr size_t FRAME_COUNT_OFFSET = 10;
+constexpr size_t FRAME_TYPE_OFFSET = 11;
+constexpr size_t FRAME_SIGNKEY_OFFSET = 12;
+constexpr size_t FRAME_MSGDATA_OFFSET = 44;
+
+constexpr size_t FRAME_SYNC_SIZE = 4;
 constexpr size_t FRAME_HOSTIP_SIZE = 4;
 constexpr size_t FRAME_HOSTPORT_SIZE = 2;
 constexpr size_t FRAME_TYPE_SIZE = 1;
 constexpr size_t FRAME_COUNT_SIZE = 1;
 constexpr size_t FRAME_SIGKEY_SIZE = 32;
-constexpr size_t FRAME_HEADER_SIZE = 40;
+constexpr size_t FRAME_HEADER_SIZE = 44;
 
 constexpr size_t FRAME_HEAD_SIZE = (FRAME_HOSTIP_SIZE + FRAME_HOSTPORT_SIZE + 
     FRAME_TYPE_SIZE + FRAME_COUNT_SIZE + FRAME_SIGKEY_SIZE);
 
 class BaseFrame {
 public:
-    friend class UKcp;
+    friend class KcpServer;
+    friend class KcpClient;
 
     BaseFrame();
     BaseFrame(std::string &ip, uint16_t port, FrameType frame_type, uint8_t count);

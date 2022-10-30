@@ -26,6 +26,7 @@ public:
 
     static std::string Now();
     static uint64_t Second();
+    static uint32_t iClock();
     static uint64_t MillSecond();
     static uint64_t MicroSecond();
     static uint64_t NanoSecond();

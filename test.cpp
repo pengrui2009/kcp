@@ -99,9 +99,14 @@ void test(int mode)
 
 		// 处理虚拟网络：检测是否有udp包从p1->p2
 		while (1) {
-			hr = vnet->recv(1, buffer, 2000);
+			hr = vnet->recv(1, buffer, 2000);			
 			if (hr < 0) break;
 			// 如果 p2收到udp，则作为下层协议输入到kcp2
+			for (int i=0; i<hr;i++)
+			{
+				fprintf(stderr, " %02X", buffer[i]);
+			}
+			fprintf(stderr, "\n");
 			ikcp_input(kcp2, buffer, hr);
 		}
 

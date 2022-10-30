@@ -1,9 +1,6 @@
 #ifndef TYPEDEF_H
 #define TYPEDEF_H
 
-#include <cstdint>
-
-typedef uint16_t ukcp_uint16;
-typedef uint32_t ukcp_uint32;
+// typedef uint32_t kcp_conv_t;
 
 #endif /* TYPEDEF_H */
