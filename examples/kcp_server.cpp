@@ -116,7 +116,7 @@ void asioudp::set_receive_callback_func(const std::function<receive_callback_fun
 
 void asioudp::OnSendDataCallback(const boost::system::error_code &ec, std::size_t bytes_transferred)
 {
-    // std::cout << "OnSendDataCallback data_len:" << bytes_transferred << std::endl;
+    std::cout << "OnSendDataCallback data_len:" << bytes_transferred << std::endl;
 }
 
 void asioudp::OnReceiveDataCallback(const boost::system::error_code &ec, std::size_t bytes_transferred) 
@@ -130,7 +130,6 @@ void asioudp::OnReceiveDataCallback(const boost::system::error_code &ec, std::si
     }
     if (ready_.load()) {
         // std::cout << "OnReceiveDataCallback bytes_transferred:" << bytes_transferred << std::endl;
-        
         receive_callback_(endpoint_, tempBuffer_.data(), bytes_transferred);
     }
     tempBuffer_.fill(0U);
@@ -188,21 +187,21 @@ static inline IUINT32 iclock()
 	return (IUINT32)(iclock64() & 0xfffffffful);
 }
 
-class KcpClient {
+class KcpServer {
 public:
-    KcpClient(const uint16_t server_port) : server_port_(server_port)
+    KcpServer()
     {
-        udp_ptr_ = std::make_shared<asioudp>(37001);
+        udp_ptr_ = std::make_shared<asioudp>(36001);
 
         kcp_ptr_.reset(ikcp_create(0x6688, (void *)this));
 
-        udp_ptr_->set_receive_callback_func(std::bind(&KcpClient::handle_receive_callback, this, std::placeholders::_1, 
-            std::placeholders::_2, std::placeholders::_3));
+        kcp_ptr_->output = &KcpServer::output;
 
-        kcp_ptr_->output = &KcpClient::output;
+        // udp_ptr_->set_receive_callback_func(std::bind(&KcpServer::handle_receive_callback, this, std::placeholders::_1, 
+        //     std::placeholders::_2, std::placeholders::_3));
     }
 
-    ~KcpClient()
+    ~KcpServer()
     {
         
     }
@@ -228,6 +227,8 @@ public:
 		kcp_ptr_->rx_minrto = 10;
 		kcp_ptr_->fastresend = 1;
 
+        ikcp_flush(kcp_ptr_.get());
+
         std::thread([this]()
         {
             int ret = 0;
@@ -247,11 +248,13 @@ public:
                 }
 
                 ret = ikcp_waitsnd(kcp_ptr_.get());
-                // std::cout << "ikcp_waitsnd size:" << ret << std::endl;
-
+                std::cout << "ikcp_waitsnd size:" << ret << std::endl;
             }
             
         }).detach();
+
+        udp_ptr_->set_receive_callback_func(std::bind(&KcpServer::handle_receive_callback, this, std::placeholders::_1, 
+            std::placeholders::_2, std::placeholders::_3));
 
         return 0;
     }
@@ -268,7 +271,7 @@ public:
     {
         int ret = 0;
         std::string server_ip = "127.0.0.1";
-        uint16_t server_port = server_port_;
+        uint16_t server_port = 37001;
 
         ret = udp_ptr_->send(asioudp::NORMAL_SEND, data_ptr, data_len, server_ip, server_port);
         if (ret)
@@ -297,7 +300,7 @@ public:
 
     void handle_receive_callback(const asio_endpoint_t &dest, uint8_t *data_ptr, uint16_t data_len)
     {
-        // std::cout << "handle_receive_callback data_len:" << data_len << std::endl;
+        std::cout << "handle_receive_callback data_len:" << data_len  << " data:" << static_cast<int>(data_ptr[0]) << std::endl;
         int ret = 0;
         ret = ikcp_input(kcp_ptr_.get(), reinterpret_cast<const char *>(data_ptr), data_len);
         if (ret)
@@ -308,13 +311,11 @@ public:
 
     static int output(const char *data_ptr, int data_len, struct IKCPCB *kcp, void *user_ptr)
     {
-        // std::cout << iclock() << "ikcp output success." << std::endl;
-        return ((KcpClient *)user_ptr)->send_udp_packet(reinterpret_cast<const uint8_t *>(data_ptr), data_len);
+        // std::cout << iclock() << " output success." << std::endl;
+        return ((KcpServer *)user_ptr)->send_udp_packet(reinterpret_cast<const uint8_t *>(data_ptr), data_len);
     }
 
 private:
-    uint16_t server_port_;
-
     std::shared_ptr<asioudp> udp_ptr_;
 
     std::shared_ptr<ikcpcb> kcp_ptr_;
@@ -326,30 +327,30 @@ private:
 int main()
 {
     int ret = 0;
-    std::shared_ptr<KcpClient> client_ptr = std::make_shared<KcpClient>(36001);
+    std::shared_ptr<KcpServer> server_ptr = std::make_shared<KcpServer>();
 
-    ret = client_ptr->initialize();
+    ret = server_ptr->initialize();
     if (ret)
     {
         std::cout << "initialize failed." << std::endl;
         return -1;
     }
 
-    std::thread([client_ptr](){
-        sleep(1);
+    std::thread([server_ptr](){
         while(1)
         {
-            // static uint8_t msg_count = 0;
-            // char buffer[] = {0x00, 0x01, 0x02, 0x03};
-            // buffer[0] = msg_count++;
-            // client_ptr->send_kcp_packet(buffer, sizeof(buffer));
-            // std::cout << "msg_count:" << static_cast<int>(buffer[0]) << " send_kcp_packet success." << std::endl;
-            // client_ptr->send_udp_packet(reinterpret_cast<const uint8_t *>(buffer), sizeof(buffer));
+            int ret = 0;
+            static uint8_t msg_count = 0;
+            char buffer[] = {0x00, 0x01, 0x02, 0x03};
+            buffer[0] = msg_count++;
+            ret = server_ptr->send_kcp_packet(buffer, sizeof(buffer));
+            std::cout << "send_kcp_packet success. ret:" << ret << std::endl;
+            // server_ptr->send_udp_packet(reinterpret_cast<const uint8_t *>(buffer), sizeof(buffer));
             sleep(1);
         }
     }).detach();
 
-    client_ptr->run();
+    server_ptr->run();
 
     return 0;
 }

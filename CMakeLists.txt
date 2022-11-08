@@ -181,3 +181,14 @@ target_link_libraries(kcp_client_test
     boost_system
     # ${CMAKE_SOURCE_DIR}/third_party/enet/lib/libenet.a
 )
+
+add_executable(kcp_server_test
+    ikcp.c
+    examples/kcp_server.cpp
+)
+
+target_link_libraries(kcp_server_test
+    pthread    
+    boost_system
+    # ${CMAKE_SOURCE_DIR}/third_party/enet/lib/libenet.a
+)
