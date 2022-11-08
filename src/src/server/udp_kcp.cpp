@@ -1,5 +1,6 @@
 #include "udp_kcp.h"
 #include "asio_udp.h"
+#include "connection.h"
 #include "timestamp.h"
 
 #include "base_frame.h"
@@ -19,137 +20,6 @@ Packet::Packet()
 Packet::~Packet()
 {
 
-}
-
-Connection::Connection(const kcp_conv_t conv, asio_endpoint_t endpoint, 
-    int mtu_size, KcpServer *server_ptr) :
-    conv_(conv),
-    mtu_size_(mtu_size),
-    endpoint_(endpoint)
-{
-    kcp_ptr_ = ikcp_create(conv, (void *)server_ptr);
-    kcp_ptr_->output = &Connection::kcp_output;
-
-    // set mtu size
-    ikcp_setmtu(kcp_ptr_, mtu_size);
-
-    ikcp_wndsize(kcp_ptr_, 128, 128);
-
-    // default mode
-    // ikcp_nodelay(kcp_ptr_, 0, 10, 0, 0);
-
-    // normal mode
-    // ikcp_nodelay(kcp_ptr_, 0, 10, 0, 1);
-    
-    // fast mode interval: 10ms disable, enable resend, flow control
-    ikcp_nodelay(kcp_ptr_, 2, 10, 2, 1);
-    kcp_ptr_->rx_minrto = 10;
-    kcp_ptr_->fastresend = 1;
-
-    stop_.store(false, std::memory_order_release);
-    LOG_INFO("Connection init");
-}
-
-Connection::~Connection()
-{
-    ikcp_release(kcp_ptr_);
-    kcp_ptr_ = NULL;
-    conv_ = 0;
-    stop_.store(true, std::memory_order_release);
-}
-
-int Connection::kcp_input(const asio_endpoint_t& dest, const uint8_t* data_ptr, size_t data_len)
-{
-    int ret = 0;
-    std::string ip = "";
-    uint16_t port = 0x00;
-
-    endpoint_ = dest;
-
-    boost::asio::ip::address addr = dest.address();
-
-    ip = addr.to_string();
-    port = dest.port();
-    // get_ipaddress(dest, ip, port);
-
-    LOG_INFO("[%s:%d] recv input data_len:%d ", ip.c_str(), port, data_len);
-    for (int i=0; i<data_len; i++)
-    {
-        fprintf(stderr, " %02X", data_ptr[i]);
-    }
-    fprintf(stderr, "\n");
-
-    ret = ikcp_input(kcp_ptr_, reinterpret_cast<const char *>(data_ptr), data_len);
-    if (ret)
-    {
-        LOG_ERROR("ikcp_input failed, ret:%d", ret);
-        return -1;
-    }
-
-    LOG_INFO("ikcp_input succes");
-    return 0;
-}
-
-int Connection::kcp_output(const char *data_ptr, int data_len, struct IKCPCB *kcp_ptr, void *user_ptr)
-{
-    if (kcp_ptr == nullptr)
-    {
-        LOG_ERROR("kcp_ptr is nullptr");
-        return -1;
-    }
-
-    if (user_ptr == nullptr)
-    {
-        LOG_ERROR("user_ptr is nullptr");
-        return -1;
-    }
-    LOG_INFO("kcp_output send udp packet");
-    // udp send 
-    return ((KcpServer*)user_ptr)->send_udp_packet(kcp_ptr, reinterpret_cast<const uint8_t *>(data_ptr), data_len);
-}
-
-int Connection::kcp_send(const uint8_t *data_ptr, int data_len)
-{
-    int ret = 0;
-
-    ret = ikcp_send(kcp_ptr_, reinterpret_cast<const char *>(data_ptr), data_len);
-    if (ret)
-    {
-        LOG_ERROR("response base frame ikcp_send failed, ret:%d", ret);
-        return -1;
-    }
-
-    return 0;
-}
-
-int Connection::kcp_receive(uint8_t *data_ptr, size_t data_len)
-{
-    int ret = 0;
-    // size_t buffer_size = 1024;
-    // std::unique_ptr<uint8_t[]> buffer_ptr = std::make_unique<uint8_t[]>(buffer_size);
-    // size_t buffer_size = 50;
-    // uint8_t buffer_ptr[50] = {0};
-
-    ret = ikcp_recv(kcp_ptr_, reinterpret_cast<char *>(data_ptr), data_len);
-    if (ret <= 0)
-    {
-        // LOG_ERROR("response base frame ikcp_send failed, ret:%d", ret);
-        return -1;
-    }
-
-    return ret;
-
-}
-
-void Connection::kcp_update(uint32_t clock)
-{
-    
-    if (kcp_ptr_ == nullptr)
-    {
-        return;
-    }
-
-    ikcp_update(kcp_ptr_, clock);
 }
 
 int KcpServer::output(const char *data_ptr, int data_len, struct IKCPCB *kcp_ptr, void *user_ptr)
@@ -254,13 +124,21 @@ int KcpServer::send_kcp_packet(const kcp_conv_t conv, const uint8_t *data_ptr, s
 int KcpServer::handle_connect_frame(const asio_endpoint_t &dest, kcp_conv_t &kcp_conv)
 {
     int ret = 0;
-    kcp_conv_t conv = get_new_conv();
+    kcp_conv_t conv = 0;
     std::string dest_ip = "";
     uint16_t dest_port = 0x00;
+
+    ret = get_new_conv(conv);
+    if (ret)
+    {
+        LOG_ERROR("get new conv failed.");
+        return -1;
+    }
 
     kcp_conv = conv;
     get_ipaddress(dest, dest_ip, dest_port);
     // LOG_INFO("dest info %s:%d", dest_ip.c_str(), dest_port);
+    
     // create response packet
     
     std::shared_ptr<BaseFrame> frame_ptr = std::make_shared<BaseFrame>(dest_ip, dest_port, 
@@ -507,8 +385,9 @@ int KcpServer::get_packet_conv(const uint8_t *data_ptr, size_t data_len, kcp_con
  * 
  * @return kcp_conv_t 
  */
-kcp_conv_t KcpServer::get_new_conv(void) const
+int KcpServer::get_new_conv(kcp_conv_t &conv) const
 {
+    int ret = 0;
     // todo using rand to get a conv. privent the attack from guess conv.
     // and must bigger than 1000
 
@@ -517,9 +396,15 @@ kcp_conv_t KcpServer::get_new_conv(void) const
     // static_cur_conv++;
     kcp_conv_t new_conv = 0x00;
     
-    new_conv = random_conv_ptr_->random();
+    ret = random_conv_ptr_->get_conv(new_conv);
+    if (ret)
+    {
+        LOG_ERROR("random conv get_conv failed.");
+        return -1;
+    }
+    conv = new_conv;
 
-    return new_conv;
+    return 0;
 }
 
 int KcpServer::do_kcp_timer_handle()
@@ -591,7 +476,7 @@ KcpServer::KcpServer(std::string ip, uint16_t port) : ASIOUdp(NORMAL_MODE, ip, p
     mtu_size_(DEFAULT_MTU_SIZE)
 {
     max_clients_size_ = DEFAULT_MAX_CLIENT_SIZE;
-    random_conv_ptr_ = std::make_shared<Random>(MIN_CONV_VALUE, max_clients_size_);
+    random_conv_ptr_ = std::make_shared<RandomConv>(MIN_CONV_VALUE, max_clients_size_);
 }
 
 KcpServer::~KcpServer()

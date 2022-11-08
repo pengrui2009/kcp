@@ -3,6 +3,7 @@
 
 #include "ikcp.h"
 #include "asio_udp.h"
+#include "connection.h"
 #include "timer.h"
 #include "typedef.h"
 
@@ -22,7 +23,7 @@
 
 constexpr size_t DEFAULT_MTU_SIZE = 1400;
 constexpr size_t DEFAULT_MAX_CLIENT_SIZE = 1400;
-constexpr size_t MIN_CONV_VALUE = 1000;
+constexpr int MIN_CONV_VALUE = 1000;
 
 class KcpServer;
 class Packet
@@ -34,112 +35,6 @@ protected:
     
 private:
 
-};
-
-// TODO new reuse conv , but current not support
-// random number
-class Random
-{
-public:
-	Random(int offset, int size) : offset_(offset)
-    {
-		this->size_ = 0;
-		seeds_.resize(size);
-	}
-
-	int random() {
-		int x, i;
-		if (seeds_.size() == 0) 
-        {
-            return 0;
-        }
-
-		if (size_ == 0) 
-        { 
-			for (i = 0; i < (int)seeds_.size(); i++) 
-            {
-				seeds_[i] = offset_ + i;
-			}
-			size_ = (int)seeds_.size();
-		}
-		i = rand() % size_;
-		x = seeds_[i];
-		seeds_[i] = seeds_[--size_];
-		return x;
-	}
-
-protected:
-	int offset_;
-    int size_;
-	std::vector<int> seeds_;
-};
-
-class Connection {
-public:
-    Connection(const kcp_conv_t conv, asio_endpoint_t endpoint, int mtu_size, KcpServer *server);
-
-    ~Connection();
-
-    // int kcp_input(uint8_t *data_ptr, size_t data_len)
-    // {
-    //     return 0;
-    // }
-
-    // int kcp_output()
-    // {
-    //     return 0;
-    // }
-
-    // int kcp_receive(uint8_t *data_ptr, size_t data_len)
-    // {
-    //     return 0;
-    // }
-
-    // int kcp_send(uint8_t *data_ptr, size_t data_len)
-    // {
-    //     return 0;
-    // }
-
-    kcp_conv_t get_kcpconv() const
-    {
-        return this->conv_;
-    }
-
-    asio_endpoint_t get_endpoint() const
-    {
-        return this->endpoint_;
-    }
-
-    ikcpcb* get_kcpcb()
-    {
-        return this->kcp_ptr_;
-    }
-
-    int kcp_input(const asio_endpoint_t& dest, const uint8_t* data_ptr, size_t data_len);
-
-    static int kcp_output(const char *buf, int len, struct IKCPCB *kcp, void *user);
-
-    int kcp_send(const uint8_t *data_ptr, int data_len);
-
-    int kcp_receive(uint8_t *data_ptr, size_t data_len);
-
-    void kcp_update(uint32_t millsec_time);
-protected:
-
-private:
-    std::atomic_bool stop_;
-
-    kcp_conv_t conv_;
-    
-    asio_endpoint_t endpoint_;
-    // packet mtu size
-    int mtu_size_;
-    
-    ikcpcb *kcp_ptr_;
-    // std::shared_ptr<ikcpcb> kcp_ptr_;
-
-    
-    // static int output(const char *buf, int len, struct IKCPCB *kcp, void *user);
 };
 
 class KcpServer : public ASIOUdp
@@ -163,8 +58,6 @@ public:
 
     int send_kcp_packet(const kcp_conv_t conv, const uint8_t *data_ptr, size_t data_len);
 
-
-
     static int output(const char *buf, int len, struct IKCPCB *kcp, void *user);
 protected:
     int update(uint32_t timestamp);
@@ -182,11 +75,11 @@ private:
     // packet mtu size
     int mtu_size_;
     // max clients
-    int max_clients_size_;
+    size_t max_clients_size_;
 
     boost::asio::deadline_timer kcp_timer_;
 
-    std::shared_ptr<Random> random_conv_ptr_;
+    std::shared_ptr<RandomConv> random_conv_ptr_;
 
     std::function<event_callback_func> event_callback_;
 
@@ -207,7 +100,7 @@ private:
 
     int get_packet_conv(const uint8_t *data_ptr, size_t data_len, kcp_conv_t &conv);
 
-    kcp_conv_t get_new_conv(void) const;
+    int get_new_conv(kcp_conv_t &conv) const;
 };
 
 #endif /* UDP_KCP_H */

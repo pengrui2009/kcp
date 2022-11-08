@@ -41,7 +41,8 @@ include_directories(
     src
     src/cmn
     src/protocol
-    src/ukcp
+    src/src
+    src/src/server
 )
 
 # build reliable asio udp library
@@ -55,9 +56,10 @@ add_library(ukcp_server STATIC
     src/cmn/timer.cpp
     src/cmn/timestamp.cpp
     src/protocol/base_frame.cpp
-    src/ukcp/server/asio_udp.cpp
-    src/ukcp/server/udp_kcp.cpp
-    src/ukcp/server/server.cpp
+    src/src/server/asio_udp.cpp
+    src/src/server/connection.cpp
+    src/src/server/udp_kcp.cpp
+    src/src/server/server.cpp
 )
 
 add_library(ukcp_client STATIC
@@ -65,9 +67,9 @@ add_library(ukcp_client STATIC
     src/cmn/timer.cpp
     src/cmn/timestamp.cpp
     src/protocol/base_frame.cpp
-    src/ukcp/client/asio_udp.cpp
-    src/ukcp/client/udp_kcp.cpp
-    src/ukcp/client/client.cpp
+    src/src/client/asio_udp.cpp
+    src/src/client/udp_kcp.cpp
+    src/src/client/client.cpp
 )
 
 # build test client
@@ -147,7 +149,7 @@ target_link_libraries(udp_server_test
 # )
 
 add_executable(server
-    src/ukcp/server/main.cpp
+    src/src/server/main.cpp
 )
 
 target_link_libraries(server
@@ -159,7 +161,7 @@ target_link_libraries(server
 )
 
 add_executable(client
-    src/ukcp/client/main.cpp
+    src/src/client/main.cpp
 )
 
 target_link_libraries(client
@@ -189,6 +191,18 @@ add_executable(kcp_server_test
 
 target_link_libraries(kcp_server_test
     pthread    
+    boost_system
+    # ${CMAKE_SOURCE_DIR}/third_party/enet/lib/libenet.a
+)
+
+add_executable(random_conv_test
+    src/examples/randomconv_test.cpp
+)
+
+target_link_libraries(random_conv_test
+    pthread
+    ukcp_server
+    kcp    
     boost_system
     # ${CMAKE_SOURCE_DIR}/third_party/enet/lib/libenet.a
 )
