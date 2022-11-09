@@ -69,6 +69,8 @@ private:
     std::atomic_bool run_;
 
     std::mutex connections_mutex_;
+    // signature key
+    std::string sign_key_;
 
     std::unordered_map<kcp_conv_t, std::shared_ptr<Connection>> connections_;
     

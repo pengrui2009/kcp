@@ -1,12 +1,6 @@
 #include "base_frame.h"
 
 #include "logger.h"
-
-#include <openssl/evp.h>
-#include <openssl/sha.h>
-#include <openssl/hmac.h>
-
-#include <cstddef>
 #include <cstdint>
 
 // std::array<uint8_t, 24> BaseFrame::signkey_ = {0x11, 0x12, 0x13, 0x14};
@@ -159,40 +153,25 @@ void BaseFrame::WriteUint16LE(uint8_t* p, uint16_t value)
     p[1] = (value >> 8) & 0xFF;
 }
 
-BaseFrame::BaseFrame(const std::string &signkey) : 
-    msg_type_(MSGTYPE_UNKNOWN),
-    msg_count_(0)
+BaseFrame::BaseFrame() : 
+    type_(FRAMETYPE_UNKNOWN),
+    count_(0)
 {
     buffer_.clear();
-    body_data_.clear();
-    body_len_ = 0;
 }
 
-BaseFrame::BaseFrame(const std::string &signkey, uint64_t timestamp, 
-    uint8_t count, MsgType type) : 
-    msg_count_(count),
-    msg_type_(type)
+BaseFrame::BaseFrame(std::string &ip, uint16_t port, FrameType type, uint8_t count) : 
+    count_(count),
+    type_(type)
 {
     buffer_.clear();
-    body_data_.clear();
-    body_len_ = 0;
-}
-
-BaseFrame::BaseFrame(const std::string &signkey, uint64_t timestamp, 
-    uint8_t count, MsgType type, uint8_t *data_ptr, size_t data_len) : 
-    msg_count_(count),
-    msg_type_(type)
-{
-    buffer_.clear();
-    body_data_.clear();
-    body_len_ = 0;
     
-    if (data_len)
+    if (set_host_ip(ip) != 0)
     {
-        body_data_.resize(data_len);
-        memcpy(body_data_.data(), data_ptr, data_len);
-        body_len_ = data_len;
+        throw("set_host_ip error!");
     }
+    
+    address_.port = port;
 }
 
 BaseFrame::~BaseFrame()
@@ -200,49 +179,150 @@ BaseFrame::~BaseFrame()
     buffer_.clear();
 }
 
-// int BaseFrame::generate_signature()
-// {
-//     uint32_t signature_data_size = 0;
-//     std::array<unsigned char, EVP_MAX_MD_SIZE> signature_data;
-
-//     HMAC(EVP_sha256(), reinterpret_cast<const void*>(signature_key_.c_str()), static_cast<int>(signature_key_.size()),
-//         body_data_.data(), body_data_.size(), signature_data.data(), &signature_data_size);
-
-//     memcpy(msg_signdata_.data(), signature_data.data(), signature_data_size);
-// }
-/**
- * @brief calculate HMAC SHA256 data
- * 
- * @param data_ptr 
- * @param data_len 
- * @return int 
- */
-int BaseFrame::generate_signature(uint8_t *data_ptr, size_t data_len)
+int BaseFrame::encode()
 {
     int ret = 0;
 
-    uint32_t signature_data_size = 0;
-    std::array<unsigned char, EVP_MAX_MD_SIZE> signature_data;
+    buffer_.clear();
 
-    HMAC(EVP_sha256(), reinterpret_cast<const void*>(signature_key_.c_str()), static_cast<int>(signature_key_.size()),
-        data_ptr, data_len, signature_data.data(), &signature_data_size);
+    // sync 
+    buffer_.push_back(SYNC_BYTE_0);
+    buffer_.push_back(SYNC_BYTE_1);
+    buffer_.push_back(SYNC_BYTE_2);
+    buffer_.push_back(SYNC_BYTE_3);
 
-    memcpy(msg_signdata_.data(), signature_data.data(), signature_data_size);
+    // ip
+    uint8_t buffer_ip[FRAME_HOSTIP_SIZE] = {0};    
+    WriteUint32BE(buffer_ip, this->address_.host);
+    for (int i=0; i<sizeof(buffer_ip); i++)
+    {
+        buffer_.push_back(buffer_ip[i]);
+    }
+
+    // port
+    uint8_t buffer_port[FRAME_HOSTPORT_SIZE] = {0};
+    WriteUint16BE(buffer_port, this->address_.port);
+    for (int i=0; i<sizeof(buffer_port); i++)
+    {
+        buffer_.push_back(buffer_port[i]);
+    }
+
+    // count 
+    buffer_.push_back(count_);
+
+    // type
+    buffer_.push_back(static_cast<uint8_t>(type_));
+
+    // signkey
+    for (int i=0; i<signkey_.size(); i++)
+    {
+        buffer_.push_back(signkey_[i]);
+    }
+
+    for (size_t i=0; i<body_.size(); i++)
+    {
+        buffer_.push_back(body_[i]);
+    }
 
     return 0;
 }
 
-bool BaseFrame::verify_signature(const uint8_t *data_ptr, size_t data_len)
+int BaseFrame::encode(uint8_t *data_ptr, size_t data_len)
 {
-    uint32_t signature_data_size = 0;
-    std::array<unsigned char, EVP_MAX_MD_SIZE> signature_data;
+    int ret = 0;
 
-    HMAC(EVP_sha256(), reinterpret_cast<const void*>(signature_key_.c_str()), static_cast<int>(signature_key_.size()),
-         data_ptr, data_len, signature_data.data(), &signature_data_size);
-    
-    if (std::equal(std::begin(msg_signdata_), std::end(msg_signdata_), std::begin(signature_data))) {
-        return true;
-    } else {
-        return false;
+    buffer_.clear();
+
+    // sync 
+    buffer_.push_back(SYNC_BYTE_0);
+    buffer_.push_back(SYNC_BYTE_1);
+    buffer_.push_back(SYNC_BYTE_2);
+    buffer_.push_back(SYNC_BYTE_3);
+
+    // ip
+    uint8_t buffer_ip[FRAME_HOSTIP_SIZE] = {0};
+    WriteUint32BE(buffer_ip, this->address_.host);
+    for (int i=0; i<sizeof(buffer_ip); i++)
+    {
+        buffer_.push_back(buffer_ip[i]);
     }
+
+    // port
+    uint8_t buffer_port[FRAME_HOSTPORT_SIZE] = {0};
+    WriteUint16BE(buffer_port, this->address_.port);
+    for (int i=0; i<sizeof(buffer_port); i++)
+    {
+        buffer_.push_back(buffer_port[i]);
+    }
+
+    // count 
+    buffer_.push_back(count_);
+
+    // type
+    buffer_.push_back(static_cast<uint8_t>(type_));
+
+    // signkey
+    for (int i=0; i<signkey_.size(); i++)
+    {
+        buffer_.push_back(signkey_[i]);
+    }
+
+    for (size_t i=0; i<data_len; i++)
+    {
+        buffer_.push_back(data_ptr[i]);
+    }
+
+    return 0;
 }
+
+int BaseFrame::decode(const uint8_t *data_ptr, size_t data_len)
+{
+    int ret = 0;
+    size_t offset = 0x00;
+
+    if (FRAME_HEADER_SIZE > data_len)
+    {
+        LOG_ERROR("data frame decode failed, data_len:%d < %d", data_len, FRAME_HEADER_SIZE);
+        return -1;
+    }
+
+    address_.host = ReadUint32BE(&data_ptr[FRAME_HOSTIP_OFFSET]);
+    address_.port = ReadUint16BE(&data_ptr[FRAME_HOSTPORT_OFFSET]);
+    count_ = data_ptr[FRAME_COUNT_OFFSET];
+    type_ = static_cast<FrameType>(data_ptr[FRAME_TYPE_OFFSET]);
+    memcpy(signkey_.data(), &data_ptr[FRAME_MSGDATA_OFFSET], signkey_.size());
+
+    for (size_t i=FRAME_HEADER_SIZE; i < data_len; i++)
+    {
+        body_.push_back(data_ptr[i]);
+    }
+    return 0;
+}
+
+// int BaseFrame::send(ENetPeer *peer_ptr, uint8_t chan)
+// {
+//     int ret = 0;
+
+//     if (nullptr == peer_ptr)
+//     {
+//         LOG_ERROR("IM frame send failed, ret:%d", ret);
+//         return -1;
+//     }
+
+//     ENetPacket *packet = enet_packet_create(NULL, buffer_.size(), ENET_PACKET_FLAG_RELIABLE);
+//     if (nullptr == packet)
+//     {
+//         return -1;
+//     }
+    
+//     memcpy(packet->data, buffer_.data(), buffer_.size());
+
+//     ret = enet_peer_send(peer_ptr, chan, packet);
+//     if (ret)
+//     {
+//         LOG_ERROR("enet_peer_send failed ret:%d", ret);
+//         return ret;
+//     }
+
+//     return 0;
+// }

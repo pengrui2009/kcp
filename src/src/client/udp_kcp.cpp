@@ -2,8 +2,9 @@
 #include "asio_udp.h"
 #include "timestamp.h"
 
-#include "base_frame.h"
-
+#include "request_connect_frame.h"
+#include "request_disconnect_frame.h"
+#include "response_frame.h"
 #include "logger.h"
 
 #include <atomic>
@@ -100,7 +101,7 @@ int KcpClient::do_receive_handle(const asio_endpoint_t &dest, size_t bytes_trans
 {
     int ret = 0;
 
-    if (bytes_transferred < FRAME_SYNC_SIZE)
+    if (bytes_transferred < PAIRFRAME_MSGSYNC_SIZE)
     {
         LOG_ERROR("bytes_transferred is not enough %d", bytes_transferred);
         return -1;
@@ -132,20 +133,58 @@ int KcpClient::do_receive_handle(const asio_endpoint_t &dest, size_t bytes_trans
 int KcpClient::handle_udp_packet(asio_endpoint_t dest, uint8_t *data_ptr, size_t data_len)
 {
     int ret = 0;
-    std::shared_ptr<BaseFrame> frame_ptr = std::make_shared<BaseFrame>();
-
-    if (data_len < FRAME_HEADER_SIZE)
+    
+    if (data_len < PAIRFRAME_MIN_SIZE)
     {
-        LOG_ERROR("udp frame length is not enought %d < %d", data_len, FRAME_HEADER_SIZE);
+        LOG_ERROR("udp frame length is not enought %d < %d", data_len, PAIRFRAME_MIN_SIZE);
         return -1;
     }
 
-    ret = frame_ptr->decode(data_ptr, data_len);
-    if (ret)
+    MsgType type = static_cast<MsgType>(data_ptr[PAIRFRAME_MSGTYPE_OFFSET]);
+    switch (type)
     {
-        LOG_ERROR("base frame decode failed, ret:%d", ret);
-        return -1;
+        case MSGTYPE_CONNECTED:
+        {
+            std::shared_ptr<ResponseFrame> frame_ptr = std::make_shared<ResponseFrame>(sign_key_);
+            ret = frame_ptr->decode(data_ptr, data_len);
+            if (ret)
+            {
+                LOG_ERROR("response frame decode failed, ret:%d", ret);
+                return -1;
+            }
+            
+            conv_ = frame_ptr->get_kcp_conv();
+            LOG_INFO("get conv:%d", conv_);
+            run_state_.store(2, std::memory_order_release);
+
+            connect_cond_.notify_one();
+
+            break;
+        }
+        case MSGTYPE_DISCONNECTED:
+        {
+            std::shared_ptr<ResponseFrame> frame_ptr = std::make_shared<ResponseFrame>(sign_key_);
+            ret = frame_ptr->decode(data_ptr, data_len);
+            if (ret)
+            {
+                LOG_ERROR("response frame decode failed, ret:%d", ret);
+                return -1;
+            }
+
+            conv_ = frame_ptr->get_kcp_conv();
+            
+            LOG_INFO("get conv:%d", conv_);
+            run_state_.store(5, std::memory_order_release);
+
+            connect_cond_.notify_one();
+            break;
+        }
+        default:
+        {
+            break;
+        }
     }
+    
 
     // ret = frame_ptr->get_host_ip(dest_ip);
     // if (ret)
@@ -161,54 +200,54 @@ int KcpClient::handle_udp_packet(asio_endpoint_t dest, uint8_t *data_ptr, size_t
     //     return -1;
     // }
 
-    FrameType type = frame_ptr->get_frametype();
-    switch(type)
-    {
-    case FRAMETYPE_REQUEST_CONNECT:
-    {        
-        break;
-    }
-    case FRAMETYPE_CONNECTED:
-    {
-        // ret = handle_connect_response_frame(dest);
-        // if (ret)
-        // {
-        //     LOG_ERROR("handle_connect_frame failed, ret:%d", ret);
-        //     return -1;
-        // }
-        LOG_INFO("FRAMETYPE_CONNECTED");
-        if (frame_ptr->data_.size() != KCP_CONV_SIZE )
-        {
-            LOG_ERROR("invalid data length: %d != %d", frame_ptr->data_.size(), KCP_CONV_SIZE);
-            return -1;
-        }
-        conv_ = *(reinterpret_cast<kcp_conv_t *>(frame_ptr->data_.data()));
-        LOG_INFO("get conv:%d", conv_);
-        run_state_.store(2, std::memory_order_release);
+    // FrameType type = frame_ptr->get_frametype();
+    // switch(type)
+    // {
+    // case FRAMETYPE_REQUEST_CONNECT:
+    // {        
+    //     break;
+    // }
+    // case FRAMETYPE_CONNECTED:
+    // {
+    //     // ret = handle_connect_response_frame(dest);
+    //     // if (ret)
+    //     // {
+    //     //     LOG_ERROR("handle_connect_frame failed, ret:%d", ret);
+    //     //     return -1;
+    //     // }
+    //     LOG_INFO("FRAMETYPE_CONNECTED");
+    //     if (frame_ptr->body_.size() != KCP_CONV_SIZE )
+    //     {
+    //         LOG_ERROR("invalid data length: %d != %d", frame_ptr->body_.size(), KCP_CONV_SIZE);
+    //         return -1;
+    //     }
+    //     conv_ = *(reinterpret_cast<kcp_conv_t *>(frame_ptr->body_.data()));
+    //     LOG_INFO("get conv:%d", conv_);
+    //     run_state_.store(2, std::memory_order_release);
 
-        connect_cond_.notify_one();
+    //     connect_cond_.notify_one();
         
-        break;
-    }
-    case FRAMETYPE_REQUEST_DISCONNECT:
-        break;
-    case FRAMETYPE_DISCONNECTED:
-    {
-        LOG_INFO("FRAMETYPE_DISCONNECTED");
-        if (frame_ptr->data_.size() != KCP_CONV_SIZE )
-        {
-            LOG_ERROR("invalid data length: %d != %d", frame_ptr->data_.size(), KCP_CONV_SIZE);
-            return -1;
-        }
-        conv_ = *(reinterpret_cast<kcp_conv_t *>(frame_ptr->data_.data()));
-        LOG_INFO("get conv:%d", conv_);
-        run_state_.store(5, std::memory_order_release);
+    //     break;
+    // }
+    // case FRAMETYPE_REQUEST_DISCONNECT:
+    //     break;
+    // case FRAMETYPE_DISCONNECTED:
+    // {
+    //     LOG_INFO("FRAMETYPE_DISCONNECTED");
+    //     if (frame_ptr->body_.size() != KCP_CONV_SIZE )
+    //     {
+    //         LOG_ERROR("invalid data length: %d != %d", frame_ptr->body_.size(), KCP_CONV_SIZE);
+    //         return -1;
+    //     }
+    //     conv_ = *(reinterpret_cast<kcp_conv_t *>(frame_ptr->body_.data()));
+    //     LOG_INFO("get conv:%d", conv_);
+    //     run_state_.store(5, std::memory_order_release);
 
-        connect_cond_.notify_one();
+    //     connect_cond_.notify_one();
         
-        break;
-    }
-    }
+    //     break;
+    // }
+    // }
 
     return 0;
 }
@@ -375,13 +414,14 @@ int KcpClient::connect(const std::string &server_ip, uint16_t server_port)
     server_port_ = server_port;
 
     // make connect packet
-    std::shared_ptr<BaseFrame> frame_ptr = std::make_shared<BaseFrame>(server_ip_, server_port_, 
-        FRAMETYPE_REQUEST_CONNECT, 0);
+    uint64_t timestamp = Timestamp::NanoSecond();
+    std::shared_ptr<RequestConnectFrame> frame_ptr = std::make_shared<RequestConnectFrame>(sign_key_, timestamp, 
+        server_ip_, server_port_, 0, nullptr, 0);
 
     ret = frame_ptr->encode();
     if (ret)
     {
-        LOG_ERROR("response connect packet encode failed, ret:%d", ret);
+        LOG_ERROR("request connect packet encode failed, ret:%d", ret);
         return -1;
     }
 
@@ -416,13 +456,14 @@ int KcpClient::disconnect()
     int ret = 0;
 
     // make disconnect packet
-    std::shared_ptr<BaseFrame> frame_ptr = std::make_shared<BaseFrame>(server_ip_, server_port_, 
-        FRAMETYPE_REQUEST_DISCONNECT, 0);
+    uint64_t timestamp = Timestamp::NanoSecond();
+    std::shared_ptr<RequestDisconnectFrame> frame_ptr = std::make_shared<RequestDisconnectFrame>(sign_key_, 
+        timestamp, server_ip_, server_port_, 0, conv_);
 
-    ret = frame_ptr->encode(reinterpret_cast<uint8_t *>(&conv_), sizeof(conv_));
+    ret = frame_ptr->encode();
     if (ret)
     {
-        LOG_ERROR("response connect packet encode failed, ret:%d", ret);
+        LOG_ERROR("response disconnect packet encode failed, ret:%d", ret);
         return -1;
     }
 
@@ -430,7 +471,7 @@ int KcpClient::disconnect()
     ret = send_udp_packet(frame_ptr->buffer_.data(), frame_ptr->buffer_.size());
     if (ret)
     {
-        LOG_ERROR("response connect packet send failed, ret:%d", ret);
+        LOG_ERROR("response disconnect packet send failed, ret:%d", ret);
         return -1;
     }
 

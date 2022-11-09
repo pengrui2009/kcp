@@ -50,6 +50,9 @@ private:
     std::string server_ip_;
     uint16_t server_port_;
 
+    // signature key
+    std::string sign_key_;
+    
     // 0:default 1:initialized 2:connected 3: kcp inited 4: connecting 5:disconnect
     std::atomic_int run_state_;
     std::mutex connect_mutex_;

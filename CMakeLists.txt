@@ -51,52 +51,54 @@ include_directories(
 #     src/timestamp.cpp
 #     src/reliable_asio_udp.cpp
 # )
-add_library(ukcp_server STATIC
-    src/cmn/logger.cpp    
-    src/cmn/timer.cpp
-    src/cmn/timestamp.cpp
-    src/protocol/base_frame.cpp
-    src/src/server/asio_udp.cpp
-    src/src/server/connection.cpp
-    src/src/server/udp_kcp.cpp
-    src/src/server/server.cpp
-)
 
 add_library(ukcp_client STATIC
     src/cmn/logger.cpp    
     src/cmn/timer.cpp
     src/cmn/timestamp.cpp
     src/protocol/base_frame.cpp
+    src/protocol/pair_frame.cpp
+    src/protocol/request_connect_frame.cpp
+    src/protocol/request_disconnect_frame.cpp
+    src/protocol/response_frame.cpp
     src/src/client/asio_udp.cpp
     src/src/client/udp_kcp.cpp
     src/src/client/client.cpp
 )
 
-# build test client
-add_executable(udp_client_test
-    # src/client/frame_handler.cpp
-    examples/udp_client.cpp
-)
-
-target_link_libraries(udp_client_test
+target_link_libraries(ukcp_client    
     kcp
-    pthread
-    boost_system
-    # ${CMAKE_SOURCE_DIR}/third_party/enet/lib/libenet.a
-)
-
-# build test server
-add_executable(udp_server_test
-    # src/client/frame_handler.cpp
-    examples/udp_server.cpp
-)
-
-target_link_libraries(udp_server_test
-    kcp
+    ssl
+    crypto
     pthread    
     boost_system
     # ${CMAKE_SOURCE_DIR}/third_party/enet/lib/libenet.a
 )
+
+add_library(ukcp_server STATIC
+    src/cmn/logger.cpp    
+    src/cmn/timer.cpp
+    src/cmn/timestamp.cpp
+    src/protocol/base_frame.cpp
+    src/protocol/pair_frame.cpp
+    src/protocol/request_connect_frame.cpp
+    src/protocol/request_disconnect_frame.cpp
+    src/protocol/response_frame.cpp
+    src/src/server/asio_udp.cpp
+    src/src/server/connection.cpp
+    src/src/server/udp_kcp.cpp
+    src/src/server/server.cpp
+)
+
+# target_link_libraries(ukcp_client    
+#     kcp
+#     ssl
+#     crypto
+#     pthread    
+#     boost_system
+#     # ${CMAKE_SOURCE_DIR}/third_party/enet/lib/libenet.a
+# )
+
 
 # build reliable asio udp
 # add_executable(server_test
@@ -148,17 +150,6 @@ target_link_libraries(udp_server_test
 #     # ${CMAKE_SOURCE_DIR}/third_party/enet/lib/libenet.a
 # )
 
-add_executable(server
-    src/src/server/main.cpp
-)
-
-target_link_libraries(server
-    ukcp_server
-    kcp
-    pthread    
-    boost_system
-    # ${CMAKE_SOURCE_DIR}/third_party/enet/lib/libenet.a
-)
 
 add_executable(client
     src/src/client/main.cpp
@@ -167,10 +158,27 @@ add_executable(client
 target_link_libraries(client
     ukcp_client
     kcp
+    ssl
+    crypto
     pthread    
     boost_system
     # ${CMAKE_SOURCE_DIR}/third_party/enet/lib/libenet.a
 )
+
+add_executable(server
+    src/src/server/main.cpp
+)
+
+target_link_libraries(server
+    ukcp_server
+    kcp
+    ssl
+    crypto
+    pthread    
+    boost_system
+    # ${CMAKE_SOURCE_DIR}/third_party/enet/lib/libenet.a
+)
+
 
 # test kcp client and server
 add_executable(kcp_client_test
@@ -202,7 +210,35 @@ add_executable(random_conv_test
 target_link_libraries(random_conv_test
     pthread
     ukcp_server
-    kcp    
+    kcp
+    ssl
+    crypto
+    boost_system
+    # ${CMAKE_SOURCE_DIR}/third_party/enet/lib/libenet.a
+)
+
+# build test client
+add_executable(udp_client_test
+    # src/client/frame_handler.cpp
+    examples/udp_client.cpp
+)
+
+target_link_libraries(udp_client_test
+    kcp
+    pthread
+    boost_system
+    # ${CMAKE_SOURCE_DIR}/third_party/enet/lib/libenet.a
+)
+
+# build test server
+add_executable(udp_server_test
+    # src/client/frame_handler.cpp
+    examples/udp_server.cpp
+)
+
+target_link_libraries(udp_server_test
+    kcp
+    pthread    
     boost_system
     # ${CMAKE_SOURCE_DIR}/third_party/enet/lib/libenet.a
 )
