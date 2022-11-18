@@ -14,7 +14,9 @@ Client::~Client()
     client_ptr_.reset();
 }
 
-int Client::initialize()
+int Client::initialize(std::function<connect_event_callback_t> connect_callback, 
+    std::function<disconnect_event_callback_t> disconnect_callback,
+    std::function<receive_event_callback_t> receive_callback)
 {
     int ret = 0;
 
@@ -24,6 +26,10 @@ int Client::initialize()
         LOG_ERROR("client initialize ret:%d", ret);
         return -1;
     }
+
+    connect_callback_ = connect_callback;
+    disconnect_callback_ = disconnect_callback;
+    recvdata_callback_ = receive_callback;
 
     client_ptr_->set_event_callback(std::bind(&Client::handle_event_callback, this, 
         std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4));
@@ -103,7 +109,8 @@ void Client::handle_event_callback(ukcp_info_t ukcp, EventType event_type,
         LOG_ERROR("EVENT_TYPE_DISCONNECT");
         break;
     case EVENT_TYPE_RECEIVE:
-        LOG_ERROR("EVENT_TYPE_RECEIVE data_len:%d", data_len);
+        // LOG_ERROR("EVENT_TYPE_RECEIVE data_len:%d", data_len);
+        recvdata_callback_(ukcp, event_type, data_ptr, data_len);
         break;
     default:
         break;    

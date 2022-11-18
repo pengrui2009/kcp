@@ -61,6 +61,8 @@ add_library(ukcp_client STATIC
     src/protocol/request_connect_frame.cpp
     src/protocol/request_disconnect_frame.cpp
     src/protocol/response_frame.cpp
+    src/protocol/heartbeat_frame.cpp
+    src/protocol/msg_frame.cpp
     src/src/client/asio_udp.cpp
     src/src/client/udp_kcp.cpp
     src/src/client/client.cpp
@@ -84,6 +86,8 @@ add_library(ukcp_server STATIC
     src/protocol/request_connect_frame.cpp
     src/protocol/request_disconnect_frame.cpp
     src/protocol/response_frame.cpp
+    src/protocol/heartbeat_frame.cpp
+    src/protocol/msg_frame.cpp
     src/src/server/asio_udp.cpp
     src/src/server/connection.cpp
     src/src/server/udp_kcp.cpp

@@ -126,12 +126,12 @@ int Connection::kcp_input(const asio_endpoint_t& dest, const uint8_t* data_ptr, 
     port = dest.port();
     // get_ipaddress(dest, ip, port);
 
-    LOG_INFO("[%s:%d] recv input data_len:%d ", ip.c_str(), port, data_len);
-    for (int i=0; i<data_len; i++)
-    {
-        fprintf(stderr, " %02X", data_ptr[i]);
-    }
-    fprintf(stderr, "\n");
+    // LOG_INFO("[%s:%d] recv input data_len:%d ", ip.c_str(), port, data_len);
+    // for (int i=0; i<data_len; i++)
+    // {
+    //     fprintf(stderr, " %02X", data_ptr[i]);
+    // }
+    // fprintf(stderr, "\n");
 
     ret = ikcp_input(kcp_ptr_, reinterpret_cast<const char *>(data_ptr), data_len);
     if (ret)
@@ -140,7 +140,7 @@ int Connection::kcp_input(const asio_endpoint_t& dest, const uint8_t* data_ptr, 
         return -1;
     }
 
-    LOG_INFO("ikcp_input succes");
+    // LOG_INFO("ikcp_input succes");
     return 0;
 }
 
@@ -157,7 +157,7 @@ int Connection::kcp_output(const char *data_ptr, int data_len, struct IKCPCB *kc
         LOG_ERROR("user_ptr is nullptr");
         return -1;
     }
-    LOG_INFO("kcp_output send udp packet");
+    // LOG_INFO("kcp_output send udp packet");
     // udp send 
     return ((KcpServer*)user_ptr)->send_udp_packet(kcp_ptr, reinterpret_cast<const uint8_t *>(data_ptr), data_len);
 }
@@ -204,4 +204,14 @@ void Connection::kcp_update(uint32_t clock)
     }
 
     ikcp_update(kcp_ptr_, clock);
+}
+
+void Connection::kcp_flush()
+{
+    if (kcp_ptr_ == nullptr)
+    {
+        return;
+    }
+
+    ikcp_flush(kcp_ptr_);
 }

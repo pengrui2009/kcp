@@ -121,6 +121,8 @@ int KcpServer::send_kcp_packet(const kcp_conv_t conv, const uint8_t *data_ptr, s
         return -1;
     }
 
+    connections_[conv]->kcp_flush();
+
     return 0;
 }
 
@@ -450,7 +452,7 @@ void KcpServer::handle_kcp_time()
 {
     int ret = 0;
     uint32_t timestamp = 0x00;
-
+    
     do_kcp_timer_handle();
 
     timestamp = Timestamp::iClock();

@@ -42,7 +42,7 @@ void KcpClient::OnReceiveDataCallback(const boost::system::error_code &ec,
 {
     int ret = 0;
     boost::asio::ip::udp::endpoint endpoint = endpoint_;
-    LOG_INFO("OnReceiveDataCallback data_len:%d", bytes_transferred);
+    // LOG_INFO("OnReceiveDataCallback data_len:%d", bytes_transferred);
     ret = do_receive_handle(endpoint, bytes_transferred);
     if (ret)
     {
@@ -72,7 +72,7 @@ int KcpClient::handle_kcp_packet(asio_endpoint_t dest, uint8_t *data_ptr, size_t
         LOG_ERROR("handle_connect_frame failed, ret:%d", ret);
         return -1;
     }
-
+    
     if (packet_conv != conv_)
     {
         LOG_ERROR("invalid conv %d,%d", conv_, packet_conv);
@@ -87,6 +87,7 @@ int KcpClient::handle_kcp_packet(asio_endpoint_t dest, uint8_t *data_ptr, size_t
     //         return -1;
     //     }
     // }
+    
     ret = ikcp_input(kcp_ptr_.get(), reinterpret_cast<const char *>(data_ptr), data_len);
     if (ret)
     {
@@ -280,15 +281,21 @@ void KcpClient::handle_kcp_time()
     // TODO max buffer size
     size_t buffer_size = 10 * 1024;
     std::unique_ptr<uint8_t[]> buffer_ptr = std::make_unique<uint8_t[]>(buffer_size);
-    ret = ikcp_recv(kcp_ptr_.get(), reinterpret_cast<char *>(buffer_size), buffer_size);
+    
+    ret = ikcp_recv(kcp_ptr_.get(), reinterpret_cast<char *>(buffer_ptr.get()), buffer_size);
     if (ret <= 0)
     {
         //LOG_ERROR("ikcp_recv failed, ret:%d", ret);
         // return -1;
         return;
-    } 
-
-    LOG_INFO("data_len:%d %02X", ret, buffer_ptr[0]);
+    }
+    
+    ukcp_info_t ukcp;
+    ukcp.conv = conv_;
+    // ukcp.endpoint = ;
+    
+    event_callback_(ukcp, EVENT_TYPE_RECEIVE, buffer_ptr.get(), ret);
+    // LOG_INFO("data_len:%d %02X", ret, buffer_ptr[0]);
 }
 
 int KcpClient::get_packet_conv(const uint8_t *data_ptr, size_t data_len, kcp_conv_t &conv)
@@ -347,6 +354,8 @@ int KcpClient::send_kcp_packet(const uint8_t *data_ptr, size_t data_len)
         LOG_ERROR("ikcp_send failed, ret:%d", ret);
         return -1;
     }
+    
+    // ikcp_flush(kcp_ptr_.get());
 
     return 0;
 }

@@ -166,6 +166,9 @@ public:
     int kcp_receive(uint8_t *data_ptr, size_t data_len);
 
     void kcp_update(uint32_t millsec_time);
+
+    void kcp_flush();
+
 protected:
 
 private:

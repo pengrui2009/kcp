@@ -34,6 +34,7 @@ int ResponseFrame::encode()
         {
             body_data_.push_back(buffer_conv[i]);
         }
+        body_len_ = body_data_.size();
     }
 
     ret = PairFrame::encode();

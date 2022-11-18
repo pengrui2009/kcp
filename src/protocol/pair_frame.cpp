@@ -57,8 +57,8 @@ int PairFrame::encode()
 {
     int ret = 0;
 
-    buffer_.clear();
-
+    buffer_.clear();    
+    
     // sync 
     buffer_.push_back(SYNC_BYTE_0);
     buffer_.push_back(SYNC_BYTE_1);
@@ -66,7 +66,7 @@ int PairFrame::encode()
     buffer_.push_back(SYNC_BYTE_3);
 
     // timestamp 
-    uint8_t buffer_timestamp[] = {0};
+    uint8_t buffer_timestamp[PAIRFRAME_MSGTIMESTAMP_SIZE] = {0};
     WriteUint64BE(buffer_timestamp, msg_timestamp_);
     for (int i=0; i<sizeof(buffer_timestamp); i++)
     {
@@ -172,12 +172,14 @@ int PairFrame::decode(const uint8_t *data_ptr, size_t data_len)
     msg_address_.port = ReadUint16BE(&data_ptr[PAIRFRAME_MSGHOSTPORT_OFFSET]);
     msg_count_ = data_ptr[PAIRFRAME_MSGCOUNT_OFFSET];
     msg_type_ = static_cast<MsgType>(data_ptr[PAIRFRAME_MSGTYPE_OFFSET]);
-    body_len_ = ReadUint16BE(&data_ptr[PAIRFRAME_MSGBODYLEN_OFFSET]);
+    body_len_ = ReadUint32BE(&data_ptr[PAIRFRAME_MSGBODYLEN_OFFSET]);
+    
     if (data_len != (body_len_+PAIRFRAME_MIN_SIZE))
     {
         LOG_ERROR("length is invalid, %d != %d", (body_len_+PAIRFRAME_MIN_SIZE), data_len);
         return -1;
     }
+    body_data_.resize(body_len_);
     memcpy(body_data_.data(), &data_ptr[PAIRFRAME_MSGBODYDATA_OFFSET], body_len_);
     memcpy(msg_signdata_.data(), &data_ptr[PAIRFRAME_MSGBODYDATA_OFFSET + body_len_], PAIRFRAME_MSGSIGDATA_SIZE);
 
@@ -186,6 +188,6 @@ int PairFrame::decode(const uint8_t *data_ptr, size_t data_len)
         LOG_ERROR("verify_signature failed.");
         return -1;
     }
-
+    
     return 0;
 }
