@@ -12,7 +12,7 @@ std::string Timestamp::Now()
     std::ostringstream stream;
     auto now = system_clock::now();
     time_t tt = system_clock::to_time_t(now);
-	
+	auto ms = duration_cast<milliseconds>(now.time_since_epoch()) % 1000;
 #if defined(WIN32) || defined(_WIN32)
     struct tm tm;
     localtime_s(&tm, &tt);
@@ -22,6 +22,7 @@ std::string Timestamp::Now()
     std::string timeString;
     std::strftime(buffer, 200, "%F %T", std::localtime(&tt));
     stream << buffer;
+    stream << '.' << setw(3) << setfill('0') <<  ms.count();
 #endif	
     return stream.str();
 }

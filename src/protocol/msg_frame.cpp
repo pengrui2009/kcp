@@ -76,7 +76,13 @@ int MsgFrame::encode()
     // {
     //     buffer_.push_back(body_data_[i]);
     // }
-    buffer_.push_back(seqnum_);
+    uint8_t buffer_seqnum[FRAME_MSGBODYLEN_SIZE] = {0};    
+    WriteUint32BE(buffer_seqnum, this->seqnum_);
+    for (int i=0; i<sizeof(buffer_bodylen); i++)
+    {
+        buffer_.push_back(buffer_seqnum[i]);
+    }
+    // buffer_.push_back(seqnum_);
 
     for(int i=0; i<priv_data_.size(); i++)
     {
@@ -124,7 +130,7 @@ int MsgFrame::encode(uint8_t *data_ptr, size_t data_len)
 }
 
 int MsgFrame::encode(uint64_t msg_timestamp, uint8_t msg_count,  
-    uint8_t seqnum, std::vector<uint8_t> &priv_data)
+    uint32_t seqnum, std::vector<uint8_t> &priv_data)
 {
     int ret = 0;
 
@@ -188,9 +194,9 @@ int MsgFrame::decode(const uint8_t *data_ptr, size_t data_len)
         return -1;
     }
     
-    seqnum_ = body_data_[MSGFRAME_BODYDATA_SEQNUM_OFFSET];
+    seqnum_ = ReadUint32BE(&body_data_[MSGFRAME_BODYDATA_SEQNUM_OFFSET]);
 
-    for (int i=1; i<body_data_.size(); i++)
+    for (int i=4; i<body_data_.size(); i++)
     {
         priv_data_.push_back(body_data_[i]);
     }

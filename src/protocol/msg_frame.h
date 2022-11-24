@@ -28,9 +28,9 @@ constexpr size_t MSGFRAME_MSGBODYLEN_OFFSET = 14;
 constexpr size_t MSGFRAME_MSGBODYDATA_OFFSET = 18;
 
 constexpr size_t MSGFRAME_BODYDATA_SEQNUM_OFFSET = 0;
-constexpr size_t MSGFRAME_BODYDATA_PRIVDATA_OFFSET = 1;
+constexpr size_t MSGFRAME_BODYDATA_PRIVDATA_OFFSET = 4;
 
-constexpr size_t MSGFRAME_BODYDATA_SEQNUM_SIZE = 1;
+constexpr size_t MSGFRAME_BODYDATA_SEQNUM_SIZE = 4;
 
 constexpr size_t MSGFRAME_MIN_SIZE = 50;
 
@@ -48,7 +48,7 @@ public:
 
     int encode(uint8_t *data_ptr, size_t data_len);
 
-    int encode(uint64_t msg_timestamp, uint8_t msg_count, uint8_t seqnum, 
+    int encode(uint64_t msg_timestamp, uint8_t msg_count, uint32_t seqnum, 
         std::vector<uint8_t> &priv_data);
 
     int decode(const uint8_t *data_ptr, size_t data_len);
@@ -58,7 +58,7 @@ public:
         return this->buffer_;
     }
 
-    uint8_t get_seqnum() const
+    uint32_t get_seqnum() const
     {
         return this->seqnum_;
     }
@@ -66,7 +66,7 @@ protected:
     // data buffer of frame
 
     // elements of frame
-    uint8_t seqnum_;
+    uint32_t seqnum_;
 
     std::vector<uint8_t> priv_data_;
 };
