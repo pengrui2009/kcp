@@ -44,8 +44,8 @@ int main(int argc, char *argv[])
     int ret = 0;
     char log_filepath[] = "client.log";
     std::string client_ip = "0.0.0.0";
-    // std::string server_ip = "182.92.70.200";
-    std::string server_ip = "127.0.0.1";
+    std::string server_ip = "182.92.70.200";
+    // std::string server_ip = "127.0.0.1";
     uint16_t client_port = 35001;
     uint16_t server_port = 5220;
     size_t send_buffer_size = 0;
